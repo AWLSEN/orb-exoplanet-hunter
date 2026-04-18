@@ -11,10 +11,28 @@ long-lived process Orb can checkpoint.
 """
 from __future__ import annotations
 
+import os
+import sys
+import time as _startup_time
+
+# Audit-trail file we write to BEFORE any heavy imports, so a crash in the
+# subsequent import chain still leaves a breadcrumb readable via the Orb
+# /files API. stderr_tail is frequently empty on failed agents.
+_STARTUP_LOG = os.environ.get("HUNTER_STARTUP_LOG", "/agent/data/startup.log")
+try:
+    os.makedirs(os.path.dirname(_STARTUP_LOG), exist_ok=True)
+    with open(_STARTUP_LOG, "a") as _fh:
+        _fh.write(
+            f"[{_startup_time.strftime('%Y-%m-%dT%H:%M:%SZ', _startup_time.gmtime())}] "
+            f"orchestrator.py starting; python={sys.executable} "
+            f"argv={sys.argv} cwd={os.getcwd()} HTTP_PORT={os.environ.get('HTTP_PORT', 'UNSET')}\n"
+        )
+except Exception:
+    pass
+
 import asyncio
 import json
 import logging
-import os
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
