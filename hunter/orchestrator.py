@@ -24,6 +24,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from hunter.output.candidate import list_candidates
+from hunter.pipeline import process_target
 from verification.orchestrator import is_halted, load_last_report, run_all
 
 log = logging.getLogger(__name__)
@@ -103,6 +104,41 @@ def candidate_detail(tic_id: int) -> dict:
         if c.tic_id == tic_id:
             return asdict(c)
     raise HTTPException(status_code=404, detail=f"TIC {tic_id} not found")
+
+
+@app.post("/hunt/target")
+def hunt_target(tic: int, min_sde: float = 8.0) -> dict:
+    """Process one TIC through the full pipeline.
+
+    Synchronous and slow (~30s per target). Intended for live demos
+    from the dashboard / curl — batch hunts should go through the
+    hunter.hunt CLI instead.
+    """
+    if is_halted(DATA_DIR):
+        raise HTTPException(status_code=503, detail="pipeline halted")
+    known = list_candidates(DATA_DIR / "candidates")
+    res = process_target(
+        tic,
+        min_sde=min_sde,
+        known_candidates=known,
+        write_to=DATA_DIR / "candidates",
+    )
+    return {
+        "tic_id": tic,
+        "accepted": res.accepted,
+        "reason": res.reason,
+        "sector": res.sector,
+        "candidate": None if res.candidate is None else {
+            "tic_id": res.candidate.tic_id,
+            "sector": res.candidate.sector,
+            "period_days": res.candidate.period_days,
+            "depth": res.candidate.depth,
+            "sde": res.candidate.sde,
+            "score": res.candidate.score,
+            "tier": res.candidate.tier,
+            "n_sectors_confirmed": res.candidate.n_sectors_confirmed,
+        },
+    }
 
 
 @app.get("/pipeline-health")
