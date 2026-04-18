@@ -19,31 +19,43 @@ import time as _startup_time
 # subsequent import chain still leaves a breadcrumb readable via the Orb
 # /files API. stderr_tail is frequently empty on failed agents.
 _STARTUP_LOG = os.environ.get("HUNTER_STARTUP_LOG", "/agent/data/startup.log")
+
+
+def _breadcrumb(msg: str) -> None:
+    try:
+        os.makedirs(os.path.dirname(_STARTUP_LOG), exist_ok=True)
+        with open(_STARTUP_LOG, "a") as fh:
+            fh.write(f"[{_startup_time.strftime('%Y-%m-%dT%H:%M:%SZ', _startup_time.gmtime())}] {msg}\n")
+    except Exception:
+        pass
+
+
+_breadcrumb(
+    f"orchestrator.py starting; python={sys.executable} "
+    f"argv={sys.argv} cwd={os.getcwd()} HTTP_PORT={os.environ.get('HTTP_PORT', 'UNSET')}"
+)
+
 try:
-    os.makedirs(os.path.dirname(_STARTUP_LOG), exist_ok=True)
-    with open(_STARTUP_LOG, "a") as _fh:
-        _fh.write(
-            f"[{_startup_time.strftime('%Y-%m-%dT%H:%M:%SZ', _startup_time.gmtime())}] "
-            f"orchestrator.py starting; python={sys.executable} "
-            f"argv={sys.argv} cwd={os.getcwd()} HTTP_PORT={os.environ.get('HTTP_PORT', 'UNSET')}\n"
-        )
-except Exception:
-    pass
+    import asyncio
+    import json
+    import logging
+    import time
+    from contextlib import asynccontextmanager
+    from pathlib import Path
+    from typing import Optional
 
-import asyncio
-import json
-import logging
-import time
-from contextlib import asynccontextmanager
-from pathlib import Path
-from typing import Optional
+    from fastapi import FastAPI, HTTPException
+    from fastapi.responses import HTMLResponse, JSONResponse
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
-
-from hunter.output.candidate import list_candidates
-from hunter.pipeline import process_target
-from verification.orchestrator import is_halted, load_last_report, run_all
+    from hunter.output.candidate import list_candidates
+    from hunter.pipeline import process_target
+    from verification.orchestrator import is_halted, load_last_report, run_all
+    _breadcrumb("imports ok")
+except Exception as _e:
+    import traceback as _tb
+    _breadcrumb(f"IMPORT FAILED: {type(_e).__name__}: {_e}")
+    _breadcrumb("traceback:\n" + _tb.format_exc())
+    raise
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s %(name)s: %(message)s")
@@ -296,5 +308,13 @@ setInterval(load, 60000);
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=HTTP_PORT, log_level="info")
+    _breadcrumb(f"about to uvicorn.run on port {HTTP_PORT}")
+    try:
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=HTTP_PORT, log_level="info")
+        _breadcrumb("uvicorn.run returned cleanly (shouldn't happen unless shutdown)")
+    except Exception as _e:
+        import traceback as _tb
+        _breadcrumb(f"UVICORN FAILED: {type(_e).__name__}: {_e}")
+        _breadcrumb("traceback:\n" + _tb.format_exc())
+        raise
