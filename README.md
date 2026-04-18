@@ -2,7 +2,8 @@
 
 **An autonomous agent that hunts for new exoplanets in TESS data, 24/7, for pennies.**
 
-> Live: https://cc200989.orbcloud.dev
+> Dashboard: https://orb-exoplanet-hunter.vercel.app
+> API: https://cc200989.orbcloud.dev
 
 This repo runs a continuous pipeline on [Orb Cloud](https://orbcloud.dev):
 ingest → detrend → transit-search → vet-chain → recurrence → publish. The agent sleeps to NVMe between TESS sector drops (~27 days) and wakes to process the fresh sector plus chase candidates seen in earlier sectors. Dashboard shows a live candidate list, pipeline-health panel, and a one-click hunt endpoint.
