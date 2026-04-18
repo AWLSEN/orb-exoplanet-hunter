@@ -24,24 +24,30 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s %(name)s: %(message)s")
 
 DEFAULT_DATA_DIR = Path(os.environ.get("HUNTER_DATA_DIR", "data"))
+DEFAULT_TARGETS_FILE = Path(__file__).resolve().parent.parent / "data" / "targets" / "m_dwarf_hz.txt"
 
 
 def load_tics(arg_tics: str | None, arg_from_file: str | None) -> list[int]:
-    """Parse TICs from --tics CSV or --from-file (one per line)."""
+    """Parse TICs from --tics CSV or --from-file (one per line).
+
+    With both args None, falls back to the curated
+    `data/targets/m_dwarf_hz.txt` list that ships with the repo.
+    """
     if arg_tics:
         return [int(x.strip()) for x in arg_tics.split(",") if x.strip()]
-    if arg_from_file:
-        p = Path(arg_from_file)
+    target_file = arg_from_file or (str(DEFAULT_TARGETS_FILE) if DEFAULT_TARGETS_FILE.exists() else None)
+    if target_file:
+        p = Path(target_file)
         if not p.exists():
             raise FileNotFoundError(f"target file not found: {p}")
         tics: list[int] = []
         for line in p.read_text().splitlines():
-            s = line.strip()
-            if not s or s.startswith("#"):
+            s = line.split("#", 1)[0].strip()
+            if not s:
                 continue
             tics.append(int(s))
         return tics
-    raise SystemExit("must supply --tics or --from-file")
+    raise SystemExit("no --tics, no --from-file, and default target file missing")
 
 
 def run_hunt(

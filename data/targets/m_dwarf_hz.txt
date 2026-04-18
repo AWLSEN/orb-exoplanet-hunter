@@ -1,0 +1,25 @@
+# Initial M-dwarf / notable target list for orb-exoplanet-hunter.
+# Format: one TIC ID per line. Blank lines and `#` comments are ignored.
+#
+# This is NOT meant to be an "exhaustive" M-dwarf catalog (those are
+# ~200K+ stars). It is a curated mix of:
+#   (a) well-studied known-planet hosts (sanity re-discoveries)
+#   (b) M-dwarfs with documented TESS habitable-zone activity
+#   (c) cool stars that anchor pipeline behavior across the search space.
+#
+# Operators running larger hunts should generate their own TIC lists from
+# TIC + Gaia queries and point --from-file at the result.
+
+# --- Known-planet hosts (also the gold-set for pipeline-health canary) ---
+22529346      # WASP-121 b (hot Jupiter — shotgun-easy recovery canary)
+261136679     # Pi Mensae c
+150428135     # TOI-700 system (b/c/d/e — d is habitable-zone M-dwarf)
+122373335     # Kepler-1649 system (re-observed by TESS; c is HZ)
+410153553     # LHS 3844 b (ultra-short period hot planet around M-dwarf)
+
+# --- Additional M-dwarfs with published TESS transit claims ---
+307210830     # L 98-59 (multi-planet M-dwarf system)
+441420236     # TOI-1266 (multi-planet; d is near habitable zone)
+388104525     # GJ 436 (Neptune-size)
+144539611     # LP 791-18 (small M-dwarf planets)
+86263325      # TOI-776 (multi-planet M-dwarf)

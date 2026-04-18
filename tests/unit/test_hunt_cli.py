@@ -22,14 +22,23 @@ def test_load_tics_from_file(tmp_path: Path) -> None:
     assert load_tics(None, str(f)) == [42, 99, 100]
 
 
-def test_load_tics_missing_source_raises() -> None:
-    with pytest.raises(SystemExit):
-        load_tics(None, None)
+def test_load_tics_default_falls_back_to_shipped_list() -> None:
+    # With neither --tics nor --from-file, we fall back to the curated
+    # list at data/targets/m_dwarf_hz.txt (which ships with the repo).
+    tics = load_tics(None, None)
+    assert len(tics) >= 5
+    assert 150428135 in tics  # TOI-700 must be in the default list
 
 
 def test_load_tics_missing_file() -> None:
     with pytest.raises(FileNotFoundError):
         load_tics(None, "/does/not/exist.txt")
+
+
+def test_load_tics_inline_comment_preserved(tmp_path: Path) -> None:
+    f = tmp_path / "inline.txt"
+    f.write_text("42 # trailing\n# full-line\n99\n")
+    assert load_tics(None, str(f)) == [42, 99]
 
 
 def test_run_hunt_skips_when_halted(tmp_path: Path) -> None:
