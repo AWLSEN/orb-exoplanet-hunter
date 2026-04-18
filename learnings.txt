@@ -44,6 +44,31 @@ Batch 1 — scaffold + detection pipeline (DONE)
   detrended, ran TLS — recovered period 1.27512d vs known 1.27493d
   (0.015% error), SDE=32.44, depth=15530ppm, n_transits=17. Pipeline is real.
 
+Batch 6 — deploy to Orb + launch polish (DONE)
+  [x] commit 26: scripts/deploy.sh — idempotent Orb deploy
+  [x] commit 27: fix python3 vs python + startup breadcrumb
+  [x] commit 28: instrument every init phase with _breadcrumb
+  [x] commit 29: pip install -e . so hunter/verification packages import
+  [x] commit 30: README live URL + launch.md + CHANGELOG + final polish
+  LIVE: https://cc200989.orbcloud.dev/
+  Smoke: /health returns 200 + {ok:true,halted:false}, /candidates returns [],
+         POST /hunt/target?tic=22529346 accepts WASP-121 b
+         (period=1.27512d, SDE=32.48, depth=15530ppm) from live TESS data.
+
+Deploy gotchas accumulated in Batch 6 (new, on top of orb-async-dev's list):
+  1. lang=python: Orb's container doesn't symlink `python` to `python3`.
+     Build steps + any validation scripts must use `python3`.
+  2. `python3 hunter/orchestrator.py` does NOT add the repo root to sys.path,
+     so internal package imports fail (ModuleNotFoundError: hunter). Fix
+     with `pip install -e .` in the build steps — pyproject.toml already
+     declares the packages.
+  3. Stderr_tail empty on failed agents is the standard pattern. Write a
+     /agent/data/startup.log BEFORE any heavy imports + wrap imports in
+     try/except to capture tracebacks. Readable via the /files API even
+     when the agent exits.
+  4. Config re-upload is REQUIRED before any re-build for orb.toml changes
+     to take effect. Build alone re-runs the OLD config.
+
 Batch 5 — orchestrator + FastAPI dashboard (DONE)
   [x] commit 21: hunter/orchestrator.py — FastAPI app + background health loop (10 tests)
   [x] commit 22: hunter/hunt.py — batch CLI + POST /hunt/target endpoint (7 tests)

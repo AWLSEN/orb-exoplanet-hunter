@@ -2,10 +2,29 @@
 
 **An autonomous agent that hunts for new exoplanets in TESS data, 24/7, for pennies.**
 
+> Live: https://cc200989.orbcloud.dev
+
 This repo runs a continuous pipeline on [Orb Cloud](https://orbcloud.dev):
-ingest → detrend → transit-search → 9-gate vet → Gaia cross-match → FPP → multi-sector recurrence → publish. The agent sleeps to NVMe between TESS sector drops (~27 days) and wakes to process the fresh sector plus chase candidates seen in earlier sectors. Dashboard shows a live candidate list, HZ scatter plot, cost ticker, and pipeline-health panel.
+ingest → detrend → transit-search → vet-chain → recurrence → publish. The agent sleeps to NVMe between TESS sector drops (~27 days) and wakes to process the fresh sector plus chase candidates seen in earlier sectors. Dashboard shows a live candidate list, pipeline-health panel, and a one-click hunt endpoint.
 
 Not a replacement for peer review. An industrial-scale, continuously-running **candidate surfacer** — the same thing Planet Hunters and amateur astronomers do, at machine scale and open to anyone.
+
+## Try it
+
+```bash
+curl -X POST "https://cc200989.orbcloud.dev/hunt/target?tic=22529346"
+```
+
+That processes WASP-121 (TIC 22529346) end-to-end against real TESS data: fetch from MAST, detrend, transit-search, vet, score, write candidate JSON. ~30 seconds.
+
+## Live endpoints
+
+- `GET  /`                 — dashboard (HTML, auto-refresh)
+- `GET  /health`           — liveness + halt flag
+- `GET  /candidates`       — all candidates, filterable by `?tier=` and `?min_score=`
+- `GET  /candidates/{tic}` — full candidate record including per-gate audit trail
+- `GET  /pipeline-health`  — last health-check report
+- `POST /hunt/target?tic=` — trigger synchronous hunt for one TIC
 
 ## Niche
 
