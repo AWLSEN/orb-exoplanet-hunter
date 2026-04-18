@@ -44,6 +44,15 @@ Batch 1 — scaffold + detection pipeline (DONE)
   detrended, ran TLS — recovered period 1.27512d vs known 1.27493d
   (0.015% error), SDE=32.44, depth=15530ppm, n_transits=17. Pipeline is real.
 
+Batch 5 — orchestrator + FastAPI dashboard (DONE)
+  [x] commit 21: hunter/orchestrator.py — FastAPI app + background health loop (10 tests)
+  [x] commit 22: hunter/hunt.py — batch CLI + POST /hunt/target endpoint (7 tests)
+  [x] commit 23: hunter/output/weekly_summary.py — Claude-generated narrative (5 tests)
+  [x] commit 24: data/targets/m_dwarf_hz.txt + default fallback (8 tests updated)
+  [x] commit 25: integration test — live MAST → POST /hunt/target → GET /candidates (2 tests)
+  Totals: 154 unit + 5 integration tests, all green.
+  Full dashboard stack validated end-to-end against real TESS data.
+
 Batch 4 — pipeline-health verification loops (DONE)
   [x] commit 16: verification/types.py + known_planets.py — gold-set recovery check (5 tests)
   [x] commit 17: verification/injection.py — injection-recovery sensitivity sweep (4 tests)
