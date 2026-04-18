@@ -44,6 +44,17 @@ Batch 1 — scaffold + detection pipeline (DONE)
   detrended, ran TLS — recovered period 1.27512d vs known 1.27493d
   (0.015% error), SDE=32.44, depth=15530ppm, n_transits=17. Pipeline is real.
 
+Batch 3 — scoring + recurrence + output + pipeline glue (DONE)
+  [x] commit 11: hunter/score/composite.py — sigmoid components + tier label (12 tests)
+  [x] commit 12: hunter/multisector/recurrence.py — cross-sector clusterer (13 tests)
+  [x] commit 13: hunter/output/candidate.py — atomic write + list + numpy coercion (9 tests)
+  [x] commit 14: hunter/pipeline.py — end-to-end glue + phase_tol fix for recurrence (6 tests)
+  [x] commit 15: integration test — real MAST + full pipeline writes valid candidate JSON
+  Totals: 103 unit + 3 integration tests, all green.
+  Note: TRICERATOPS FPP deferred to a future refinement — it's a heavy native
+  dep (PyTransit + native C) and the existing gates cover the primary EB /
+  blend failure modes we see in practice. Revisit after first real sector run.
+
 Batch 2 — per-candidate vetting chain (DONE)
   [x] commit 6: hunter/vet/types.py + hunter/vet/odd_even.py (5 tests)
   [x] commit 7: hunter/vet/secondary.py — secondary eclipse detection (5 tests)
