@@ -1,0 +1,118 @@
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:12:48Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:12:48Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:12:50Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:12:54Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:02Z"}
+{"depth_ppm": 2884.3, "extra": {}, "kind": "accepted", "period_days": 3.5007046185764987, "reason": "tier=moderate", "sde": 29.92, "stage": null, "tic_id": 42, "tier": "moderate", "ts": "2026-04-18T16:13:02Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:02Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:02Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:02Z"}
+{"depth_ppm": null, "extra": {}, "kind": "rejected", "period_days": null, "reason": "SDE 5.55 below floor 8.0", "sde": null, "stage": null, "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 7, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "rejected", "period_days": null, "reason": "ingest: RuntimeError", "sde": null, "stage": null, "tic_id": 7, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "rejected", "period_days": null, "reason": "detrend: ValueError", "sde": null, "stage": null, "tic_id": 1, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:03Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:06Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:09Z"}
+{"depth_ppm": 2884.3, "extra": {}, "kind": "accepted", "period_days": 3.5007046185764987, "reason": "tier=confirmed", "sde": 29.92, "stage": null, "tic_id": 42, "tier": "confirmed", "ts": "2026-04-18T16:13:09Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:09Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:09Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:09Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:12Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:13:15Z"}
+{"depth_ppm": 2884.3, "extra": {}, "kind": "accepted", "period_days": 3.5007046185764987, "reason": "tier=moderate", "sde": 29.92, "stage": null, "tic_id": 42, "tier": "moderate", "ts": "2026-04-18T16:13:15Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:14:00Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:00Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:08Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:23Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:37Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:37Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:14:37Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:14:37Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:38Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:38Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:38Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:14:52Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:07Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:21Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:21Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:15:21Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:15:21Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:21Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:21Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:22Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:36Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:50Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:50Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:15:50Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:15:50Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:50Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:50Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:15:51Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": null, "extra": {}, "kind": "info", "period_days": null, "reason": "autohunt loop started \u00b7 10 seed TICs \u00b7 300s cadence", "sde": null, "stage": null, "tic_id": null, "tier": null, "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:05Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:19Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 22529346, "tier": null, "ts": "2026-04-18T16:16:19Z"}
+{"depth_ppm": 15642.4, "extra": {}, "kind": "accepted", "period_days": 1.2751189259971245, "reason": "tier=moderate", "sde": 32.48, "stage": null, "tic_id": 22529346, "tier": "moderate", "ts": "2026-04-18T16:16:19Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:19Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:19Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:19Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:22Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:29Z"}
+{"depth_ppm": 2884.3, "extra": {}, "kind": "accepted", "period_days": 3.5007046185764987, "reason": "tier=moderate", "sde": 29.92, "stage": null, "tic_id": 42, "tier": "moderate", "ts": "2026-04-18T16:16:29Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:29Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:29Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:29Z"}
+{"depth_ppm": null, "extra": {}, "kind": "rejected", "period_days": null, "reason": "SDE 5.55 below floor 8.0", "sde": null, "stage": null, "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 7, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "rejected", "period_days": null, "reason": "ingest: RuntimeError", "sde": null, "stage": null, "tic_id": 7, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "rejected", "period_days": null, "reason": "detrend: ValueError", "sde": null, "stage": null, "tic_id": 1, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:31Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:35Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:39Z"}
+{"depth_ppm": 2884.3, "extra": {}, "kind": "accepted", "period_days": 3.5007046185764987, "reason": "tier=confirmed", "sde": 29.92, "stage": null, "tic_id": 42, "tier": "confirmed", "ts": "2026-04-18T16:16:39Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "fetch", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:39Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "detrend", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:39Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "search", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:39Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "vet", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:42Z"}
+{"depth_ppm": null, "extra": {}, "kind": "processing", "period_days": null, "reason": null, "sde": null, "stage": "write", "tic_id": 42, "tier": null, "ts": "2026-04-18T16:16:45Z"}
+{"depth_ppm": 2884.3, "extra": {}, "kind": "accepted", "period_days": 3.5007046185764987, "reason": "tier=moderate", "sde": 29.92, "stage": null, "tic_id": 42, "tier": "moderate", "ts": "2026-04-18T16:16:45Z"}

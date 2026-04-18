@@ -21,7 +21,9 @@ from hunter.multisector.recurrence import (
     cluster_recurrences,
     n_sectors_for,
 )
+from hunter.output.activity import log_accepted, log_processing, log_rejected
 from hunter.output.candidate import Candidate, write_candidate
+from hunter.output.current_state import mark_idle, write_current
 from hunter.score.composite import score_candidate
 from hunter.search.tls_search import TransitSearchResult, search
 from hunter.vet import run_vet_chain
@@ -71,10 +73,28 @@ def process_target(
     (rejected) carry the most-informative reason so the orchestrator can
     log and move on.
     """
+    # Stage breadcrumbs: the dashboard watches /current + /activity to animate.
+    # These writes are idempotent + cheap; failing to write them must never
+    # break the pipeline.
+    def _stage(stage: str) -> None:
+        try:
+            write_current(tic_id=tic_id, stage=stage)
+            log_processing(tic_id=tic_id, stage=stage)
+        except Exception:
+            pass
+
+    def _reject(reason: str) -> None:
+        try:
+            log_rejected(tic_id=tic_id, reason=reason)
+        except Exception:
+            pass
+
     try:
+        _stage("fetch")
         lc = ingest_fn(tic_id, sector)
     except Exception as e:
         log.warning("ingest failed for TIC %d: %s", tic_id, e)
+        _reject(f"ingest: {type(e).__name__}")
         return PipelineResult(
             tic_id=tic_id,
             sector=sector,
@@ -83,9 +103,11 @@ def process_target(
         )
 
     try:
+        _stage("detrend")
         flat = detrend(lc, window_length_days=0.5).flat
     except Exception as e:
         log.warning("detrend failed for TIC %d: %s", tic_id, e)
+        _reject(f"detrend: {type(e).__name__}")
         return PipelineResult(
             tic_id=tic_id,
             sector=lc.sector,
@@ -94,6 +116,7 @@ def process_target(
         )
 
     try:
+        _stage("search")
         result = search(
             flat,
             period_min_days=0.5,
@@ -102,6 +125,7 @@ def process_target(
         )
     except Exception as e:
         log.warning("search failed for TIC %d: %s", tic_id, e)
+        _reject(f"search: {type(e).__name__}")
         return PipelineResult(
             tic_id=tic_id,
             sector=flat.sector,
@@ -110,6 +134,7 @@ def process_target(
         )
 
     if result.sde < min_sde:
+        _reject(f"SDE {result.sde:.2f} below floor {min_sde}")
         return PipelineResult(
             tic_id=tic_id,
             sector=flat.sector,
@@ -118,9 +143,11 @@ def process_target(
             search=result,
         )
 
+    _stage("vet")
     vet = run_vet_chain(flat, result)
     if not vet.passed:
         hard = vet.hard_failures[0]
+        _reject(f"vet: {hard.name} — {hard.reason[:60]}")
         return PipelineResult(
             tic_id=tic_id,
             sector=flat.sector,
@@ -165,8 +192,26 @@ def process_target(
         source=lc.source,
     )
 
+    _stage("write")
     if write_to is not None:
         write_candidate(candidate, directory=write_to)
+
+    # Broadcast the accepted result to the activity log so the dashboard
+    # can render a "TIC 12345 → MODERATE (period 3.2d)" row instantly.
+    try:
+        log_accepted(
+            tic_id=tic_id,
+            tier=score.tier,
+            period_days=result.period_days,
+            depth=result.depth,
+            sde=result.sde,
+        )
+    except Exception:
+        pass
+    try:
+        mark_idle()
+    except Exception:
+        pass
 
     return PipelineResult(
         tic_id=tic_id,

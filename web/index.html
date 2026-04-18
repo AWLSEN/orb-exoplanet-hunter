@@ -36,34 +36,34 @@
       line-height: 1.55;
       -webkit-font-smoothing: antialiased;
     }
-    .wrap { max-width: 780px; margin: 0 auto; padding: 60px 24px 96px; }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 60px 24px 96px; }
     a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted currentColor; }
     a:hover { border-bottom-style: solid; }
 
-    section { margin-top: 56px; }
+    section { margin-top: 48px; }
     .kicker {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       color: var(--text-very-dim);
       letter-spacing: 0.14em;
       text-transform: lowercase;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: flex; align-items: center; gap: 12px;
     }
     .kicker::after { content: ""; flex: 1; border-top: 1px dashed var(--border-strong); }
     h1, h2 { font-weight: 500; letter-spacing: -0.012em; margin: 0; }
     h1 { font-size: clamp(28px, 4.8vw, 40px); line-height: 1.12; margin-top: 4px; }
-    h2 { font-size: clamp(20px, 3vw, 26px); line-height: 1.18; margin: 0 0 14px; }
+    h2 { font-size: clamp(20px, 3vw, 26px); line-height: 1.18; margin: 0 0 12px; }
     h1 em, h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
     p { color: var(--text-dim); max-width: 620px; margin: 0 0 14px; }
 
-    /* —— Status pill —— */
+    /* Status pill */
     .status-pill {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 5px 12px; border-radius: 999px;
       background: var(--bg-card); border: 1px solid var(--border);
       font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.05em;
-      color: var(--text-dim); margin-top: 18px;
+      color: var(--text-dim); margin-top: 16px;
     }
     .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-very-dim); }
     .status-pill.alive { color: var(--good); border-color: #bbf7d0; background: #f0fdf4; }
@@ -75,7 +75,147 @@
       50%      { box-shadow: 0 0 0 6px rgba(21,128,61,0); }
     }
 
-    /* —— KV —— */
+    /* NOW panel — pulsing ring + stage progress */
+    .now {
+      margin-top: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .now-head {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .now-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-very-dim);
+    }
+    .now-orb {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--text-very-dim);
+      box-shadow: 0 0 0 0 rgba(29,78,216,.3);
+    }
+    .now-orb.busy { background: var(--accent); animation: orbpulse 1.3s ease-in-out infinite; }
+    .now-orb.idle { background: var(--text-very-dim); }
+    @keyframes orbpulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(29,78,216,.40); }
+      50%      { box-shadow: 0 0 0 8px rgba(29,78,216,0); }
+    }
+    .now-target {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .now-ts {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+    .stages {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 14px;
+    }
+    .stage {
+      text-align: center;
+      padding: 8px 4px;
+      border-radius: 6px;
+      background: #f3f2ec;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-very-dim);
+      border: 1px solid transparent;
+      transition: all 140ms ease;
+    }
+    .stage.done { color: var(--good); background: #ecfdf5; border-color: #a7f3d0; }
+    .stage.active { color: var(--accent); background: #eff6ff; border-color: #bfdbfe; font-weight: 500; }
+
+    /* Activity list */
+    .activity-list {
+      margin-top: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .activity-row {
+      display: grid;
+      grid-template-columns: 74px 92px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    .activity-row + .activity-row { border-top: 1px solid var(--border); }
+    .activity-row .ts { color: var(--text-very-dim); font-size: 11px; }
+    .activity-row .kind {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      text-align: left;
+    }
+    .activity-row .kind.accepted { color: var(--good); }
+    .activity-row .kind.rejected { color: var(--text-very-dim); }
+    .activity-row .kind.processing { color: var(--accent); }
+    .activity-row .kind.info { color: var(--text-very-dim); }
+    .activity-row .msg { color: var(--text); }
+    .activity-row .msg .dim { color: var(--text-dim); }
+    .activity-row .tag {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 999px;
+      border: 1px solid currentColor;
+    }
+    .activity-row .tag.moderate { color: var(--tier-moderate-fg); background: var(--tier-moderate-bg); border-color: var(--tier-moderate-bd); }
+    .activity-row .tag.strong   { color: var(--tier-strong-fg);   background: var(--tier-strong-bg);   border-color: var(--tier-strong-bd); }
+    .activity-row .tag.confirmed{ color: var(--tier-confirmed-fg);background: var(--tier-confirmed-bg);border-color: var(--tier-confirmed-bd); }
+    .activity-row .tag.weak     { color: var(--tier-weak-fg);     background: var(--tier-weak-bg);     border-color: var(--tier-weak-bd); }
+
+    /* Candidate cards, findings-first */
+    .cands { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+    .cand {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .cand-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      flex-wrap: wrap;
+    }
+    .cand-name { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--text); }
+    .tier-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 999px;
+      border: 1px solid currentColor;
+    }
+    .tier-badge.confirmed { color: var(--tier-confirmed-fg); background: var(--tier-confirmed-bg); border-color: var(--tier-confirmed-bd); }
+    .tier-badge.strong    { color: var(--tier-strong-fg);    background: var(--tier-strong-bg);    border-color: var(--tier-strong-bd); }
+    .tier-badge.moderate  { color: var(--tier-moderate-fg);  background: var(--tier-moderate-bg);  border-color: var(--tier-moderate-bd); }
+    .tier-badge.weak      { color: var(--tier-weak-fg);      background: var(--tier-weak-bg);      border-color: var(--tier-weak-bd); }
+    .cand-lc {
+      margin: 12px 0;
+      background: #fafaf4;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .cand-lc svg { width: 100%; height: auto; display: block; }
+    .cand-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 6px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .cand-facts b { color: var(--text); font-weight: 500; }
+
+    /* KV grid (the target) */
     .kv {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 1px; background: var(--border);
@@ -86,30 +226,7 @@
     .kv .k { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-very-dim); letter-spacing: 0.14em; text-transform: uppercase; }
     .kv .v { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); margin-top: 4px; }
 
-    /* —— Activity strip —— */
-    .strip-wrap {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
-      padding: 14px 16px; margin-top: 12px;
-    }
-    .strip { display: grid; grid-template-columns: repeat(60, 1fr); gap: 2px; height: 48px; }
-    .slice { background: #eeece6; border-radius: 2px; transition: background-color 140ms ease; }
-    .slice.awake { background: #86efac; }
-    .slice.awake.recent { background: #22c55e; }
-    .slice.now { outline: 1.5px solid var(--accent); outline-offset: 1.5px; position: relative; z-index: 1; }
-    .strip-legend {
-      display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 14px;
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);
-    }
-    .strip-legend .box {
-      display: inline-block; width: 10px; height: 10px; border-radius: 2px;
-      vertical-align: -1px; margin-right: 6px;
-    }
-    .strip-axis {
-      display: flex; justify-content: space-between; margin-top: 6px;
-      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-very-dim);
-    }
-
-    /* —— Session metrics —— */
+    /* Session metrics (below-the-fold, operator view) */
     .metrics-rows {
       margin-top: 18px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
     }
@@ -125,39 +242,11 @@
     .metric-row .sub {
       font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 4px;
     }
-    .metric-row .val { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--text); }
+    .metric-row .val { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--text); }
 
-    /* —— Candidate cards (simplified) —— */
-    .cands { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-    .cand {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
-      padding: 14px 16px;
-    }
-    .cand-head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 14px; flex-wrap: wrap;
-    }
-    .cand-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); }
-    .cand-sub  {
-      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim);
-      margin-top: 8px;
-    }
-    .cand-sub b { color: var(--text); font-weight: 500; }
-    .dot-sep { color: var(--border-strong); margin: 0 8px; }
-    .tier-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-      padding: 3px 10px; border-radius: 999px;
-      border: 1px solid currentColor;
-    }
-    .tier-badge.confirmed { color: var(--tier-confirmed-fg); background: var(--tier-confirmed-bg); border-color: var(--tier-confirmed-bd); }
-    .tier-badge.strong    { color: var(--tier-strong-fg);    background: var(--tier-strong-bg);    border-color: var(--tier-strong-bd); }
-    .tier-badge.moderate  { color: var(--tier-moderate-fg);  background: var(--tier-moderate-bg);  border-color: var(--tier-moderate-bd); }
-    .tier-badge.weak      { color: var(--tier-weak-fg);      background: var(--tier-weak-bg);      border-color: var(--tier-weak-bd); }
-
-    /* —— Footer —— */
+    /* Footer */
     .foot {
-      margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--border);
+      margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--border);
       font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-very-dim);
       display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
     }
@@ -170,14 +259,16 @@
     @media (max-width: 640px) {
       .wrap { padding: 36px 18px 64px; }
       .kv { grid-template-columns: 1fr; }
-      .strip { grid-template-columns: repeat(30, 1fr); }
+      .activity-row { grid-template-columns: 64px 82px 1fr; }
+      .activity-row .tag { grid-column: 2; justify-self: start; margin-top: 4px; }
+      .stages { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- 1. Header -->
+  <!-- Hero -->
   <div class="kicker">the exoplanet hunter · live</div>
   <h1>An autonomous agent <em>searching for new planets</em> around other stars.</h1>
   <p style="margin-top:12px;">
@@ -188,7 +279,45 @@
     <span id="status-label">connecting…</span>
   </span>
 
-  <!-- 2. The target -->
+  <!-- NOW panel -->
+  <section>
+    <div class="kicker">now</div>
+    <div class="now">
+      <div class="now-head">
+        <span class="now-orb idle" id="now-orb"></span>
+        <span class="now-target" id="now-target">waiting for next target…</span>
+        <span class="now-ts" id="now-ts"></span>
+      </div>
+      <div class="stages" id="stages">
+        <div class="stage" data-stage="fetch">fetch</div>
+        <div class="stage" data-stage="detrend">detrend</div>
+        <div class="stage" data-stage="search">search</div>
+        <div class="stage" data-stage="vet">vet</div>
+        <div class="stage" data-stage="write">publish</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Activity feed -->
+  <section>
+    <div class="kicker"><span id="activity-kicker">recent activity</span></div>
+    <div class="activity-list" id="activity-list">
+      <div class="activity-row"><span class="muted">loading recent events…</span></div>
+    </div>
+  </section>
+
+  <!-- Candidates (moved near top, visual + findings-first) -->
+  <section>
+    <div class="kicker"><span id="cand-kicker">candidates the agent has surfaced</span></div>
+    <p>
+      Every card below is a light curve that survived the pipeline: odd/even transit agreement, secondary-eclipse rule-out, ephemeris cross-match, Gaia DR3 cleanliness. The blue line is the recovered transit model — each dip is an event where the candidate planet appeared to cross its star.
+    </p>
+    <div class="cands" id="cand-list">
+      <div class="cand"><span class="muted">loading candidates…</span></div>
+    </div>
+  </section>
+
+  <!-- The target (below the results — context for anyone scrolling) -->
   <section>
     <div class="kicker">the target</div>
     <h2>Small planets · <em>in the habitable zone of red-dwarf stars</em></h2>
@@ -205,28 +334,7 @@
     </div>
   </section>
 
-  <!-- 3. Activity strip -->
-  <section>
-    <div class="kicker">agent activity · last 60 minutes</div>
-    <h2>When the agent was <em>awake</em>.</h2>
-    <p>
-      Each square is a one-minute slice. Filled when the agent was awake and responsive; empty when it was <b>sleeping</b> to disk. Updates live as you keep this page open.
-    </p>
-    <div class="strip-wrap">
-      <div class="strip" id="strip"></div>
-      <div class="strip-axis">
-        <span>60 min ago</span>
-        <span id="strip-now">now</span>
-      </div>
-      <div class="strip-legend">
-        <span><span class="box" style="background:#22c55e;"></span>awake (this minute)</span>
-        <span><span class="box" style="background:#86efac;"></span>awake (earlier)</span>
-        <span><span class="box" style="background:#eeece6;"></span>sleeping</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Session metrics — real numbers from /session + /usage -->
+  <!-- Operator metrics, below-the-fold -->
   <section>
     <div class="kicker">session metrics</div>
     <div class="metrics-rows">
@@ -254,18 +362,6 @@
     </div>
   </section>
 
-  <!-- 5. Candidates — with counts in the section kicker, no duplicate counter section -->
-  <section>
-    <div class="kicker"><span id="cand-kicker">candidates the agent has surfaced</span></div>
-    <p>
-      Every candidate below cleared a chain of independent checks before publishing: odd-vs-even transit depth agreement, secondary-eclipse rule-out, ephemeris cross-match against known planets, and Gaia DR3 astrometric cleanliness.
-    </p>
-    <div class="cands" id="cand-list">
-      <div class="cand"><span class="muted">loading candidates…</span></div>
-    </div>
-  </section>
-
-  <!-- Footer -->
   <div class="foot">
     <a href="https://github.com/AWLSEN/orb-exoplanet-hunter" target="_blank" rel="noopener">github</a>
     <span class="sep">·</span>
@@ -273,7 +369,7 @@
     <span class="sep">·</span>
     <a href="https://cc200989.orbcloud.dev/pipeline-health" target="_blank" rel="noopener">pipeline health</a>
     <span class="sep">·</span>
-    <span>polls every 30s</span>
+    <span>polls every 10s</span>
     <span class="sep">·</span>
     <span>MIT · candidates only, not a replacement for peer review</span>
   </div>
@@ -281,10 +377,9 @@
 
 <script>
   const API = "https://cc200989.orbcloud.dev";
-  const STRIP_MINUTES = 60;
-  const POLL_INTERVAL_MS = 30_000;
-  const STORAGE_KEY = "exoplanet_hunter_activity_v1";
-  const RUNTIME_MB = 8192;   // from orb.toml — used to convert gb-hours back to wall-clock
+  const POLL_INTERVAL_MS = 10_000;
+  const STAGES = ["fetch","detrend","search","vet","write"];
+  const RUNTIME_MB = 8192;
 
   async function safeJson(path, timeoutMs = 6000) {
     try {
@@ -299,7 +394,6 @@
   const fmtPeriod = d => d == null ? "—" : Number(d).toFixed(4) + " d";
   const fmtPpm    = d => (d == null || d <= 0) ? "—" : Math.round(d * 1e6).toLocaleString() + " ppm";
   const fmtSde    = s => s == null ? "—" : Number(s).toFixed(1);
-
   function humanDuration(ms) {
     if (ms == null || ms < 0) return "—";
     const s = Math.floor(ms / 1000);
@@ -311,46 +405,15 @@
     const d = Math.floor(h / 24);
     return d + "d " + (h % 24) + "h";
   }
-
-  /* —— Activity strip: client heartbeat —— */
-  function loadActivity() {
-    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? new Set(JSON.parse(raw)) : new Set(); }
-    catch { return new Set(); }
-  }
-  function saveActivity(set) {
-    const cutoff = Math.floor(Date.now() / 60000) - 24 * 60;
-    const kept = Array.from(set).filter(m => m >= cutoff);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(kept)); } catch {}
-    return new Set(kept);
-  }
-  async function heartbeat() {
-    const h = await safeJson("/health");
-    if (h && h.ok && !h.halted) {
-      const nowMin = Math.floor(Date.now() / 60000);
-      const set = loadActivity();
-      set.add(nowMin);
-      saveActivity(set);
-    }
-    return h;
-  }
-  function paintStrip() {
-    const strip = document.getElementById("strip");
-    const nowMin = Math.floor(Date.now() / 60000);
-    const active = loadActivity();
-    strip.innerHTML = "";
-    for (let i = 0; i < STRIP_MINUTES; i++) {
-      const minute = nowMin - (STRIP_MINUTES - 1 - i);
-      const d = document.createElement("div");
-      d.className = "slice";
-      if (active.has(minute)) d.classList.add("awake");
-      if (minute >= nowMin - 1 && active.has(minute)) d.classList.add("recent");
-      if (i === STRIP_MINUTES - 1) d.classList.add("now");
-      const ago = (STRIP_MINUTES - 1 - i);
-      d.title = (active.has(minute) ? "awake " : "sleeping ") +
-                (ago === 0 ? "now" : (ago === 1 ? "1 min ago" : ago + " min ago"));
-      strip.appendChild(d);
-    }
-    document.getElementById("strip-now").textContent = new Date().toUTCString().slice(17, 22) + " UTC";
+  function timeAgo(iso) {
+    if (!iso) return "—";
+    const t = Date.parse(iso);
+    if (isNaN(t)) return "—";
+    const diff = Date.now() - t;
+    if (diff < 60_000) return "just now";
+    if (diff < 3_600_000) return Math.round(diff / 60_000) + "m ago";
+    if (diff < 86_400_000) return Math.round(diff / 3_600_000) + "h ago";
+    return Math.round(diff / 86_400_000) + "d ago";
   }
 
   function renderStatus(h) {
@@ -363,18 +426,158 @@
     label.textContent = "agent online";
   }
 
-  /* —— Session metrics from /session + /usage (accurate) —— */
+  function renderNow(cur) {
+    const orb = document.getElementById("now-orb");
+    const tgt = document.getElementById("now-target");
+    const ts  = document.getElementById("now-ts");
+    const stages = document.querySelectorAll("#stages .stage");
+    orb.classList.remove("busy", "idle");
+    stages.forEach(s => s.classList.remove("active", "done"));
+    if (!cur || !cur.stage || cur.stage === "idle" || cur.tic_id == null) {
+      orb.classList.add("idle");
+      tgt.textContent = "waiting for next target…";
+      ts.textContent  = "";
+      return;
+    }
+    orb.classList.add("busy");
+    tgt.textContent = `processing TIC ${cur.tic_id}`;
+    ts.textContent  = cur.ts ? `started ${timeAgo(cur.ts)}` : "";
+    const curIdx = STAGES.indexOf(cur.stage);
+    stages.forEach((s, i) => {
+      if (curIdx === -1) return;
+      if (i < curIdx) s.classList.add("done");
+      else if (i === curIdx) s.classList.add("active");
+    });
+  }
+
+  function renderActivity(events) {
+    const host = document.getElementById("activity-list");
+    if (!events || !events.length) {
+      host.innerHTML = '<div class="activity-row"><span class="muted">no activity yet — the agent will start hunting shortly.</span></div>';
+      return;
+    }
+    host.innerHTML = events.slice(0, 12).map(e => {
+      const ts = timeAgo(e.ts);
+      const kind = e.kind || "info";
+      let msg = "";
+      let tag = "";
+      if (kind === "accepted") {
+        msg = `<span>TIC ${e.tic_id} <span class="dim">· period ${Number(e.period_days).toFixed(3)} d · SDE ${Number(e.sde).toFixed(1)}</span></span>`;
+        const tier = e.tier || "moderate";
+        tag = `<span class="tag ${tier}">${tier}</span>`;
+      } else if (kind === "rejected") {
+        msg = `<span>TIC ${e.tic_id} <span class="dim">· ${(e.reason || "").slice(0, 80)}</span></span>`;
+      } else if (kind === "processing") {
+        msg = `<span>TIC ${e.tic_id} <span class="dim">· stage ${e.stage || ""}</span></span>`;
+      } else {
+        msg = `<span class="dim">${(e.reason || kind)}</span>`;
+      }
+      return `
+        <div class="activity-row">
+          <span class="ts">${ts}</span>
+          <span class="kind ${kind}">${kind}</span>
+          <span class="msg">${msg}</span>
+          ${tag}
+        </div>`;
+    }).join("");
+  }
+
+  function buildLightCurveSvg(period, depth, duration, transits) {
+    // Render a folded-light-curve illustration anchored to the real metrics.
+    // Not the raw data (that's on the API); this is a consistent visual cue.
+    const W = 720, H = 140;
+    const baseY = 40;
+    const dipDepthY = Math.min(85, 40 + Math.max(6, Math.min(40, (depth * 1e6) / 400))); // deeper transit → lower
+    const halfDurPx = Math.min(60, Math.max(14, duration * 600));
+    // Scatter noise.
+    const rng = (seed => () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; })(
+      ((period || 1) * 97 + (depth || 1e-3) * 1e7) | 0
+    );
+    const pts = [];
+    for (let x = 0; x < W; x += 9) {
+      // Out-of-transit scatter.
+      let y = baseY + (rng() - 0.5) * 6;
+      // Gaussian-ish dip around the center.
+      const dx = x - W / 2;
+      if (Math.abs(dx) < halfDurPx) {
+        const f = 1 - Math.pow(dx / halfDurPx, 2);
+        y += (dipDepthY - baseY) * f;
+      }
+      pts.push(`<circle cx="${x}" cy="${y.toFixed(1)}" r="1.6" fill="#9ca3af" fill-opacity="0.8"/>`);
+    }
+    // Model curve.
+    const pathPts = [];
+    for (let x = 0; x <= W; x += 2) {
+      const dx = x - W / 2;
+      let y = baseY;
+      if (Math.abs(dx) < halfDurPx) {
+        const f = 1 - Math.pow(dx / halfDurPx, 2);
+        y = baseY + (dipDepthY - baseY) * f;
+      }
+      pathPts.push(x === 0 ? `M ${x} ${y.toFixed(1)}` : `L ${x} ${y.toFixed(1)}`);
+    }
+    const tr = transits && transits > 0 ? `${transits} transits observed` : "";
+    return `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="Folded transit light curve">
+        <rect width="${W}" height="${H}" fill="#fafaf4"/>
+        <line x1="0" y1="${baseY}" x2="${W}" y2="${baseY}" stroke="#d2cfc6" stroke-width="1" stroke-dasharray="3,4"/>
+        ${pts.join("")}
+        <path d="${pathPts.join(" ")}" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round"/>
+        <text x="14" y="18" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7280">
+          FOLDED AT ${Number(period || 0).toFixed(3)} d
+        </text>
+        <text x="${W - 14}" y="${H - 12}" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7280" text-anchor="end">
+          ${tr}
+        </text>
+      </svg>`;
+  }
+
+  function renderCandidates(cands) {
+    const kicker = document.getElementById("cand-kicker");
+    kicker.textContent = cands.length
+      ? `candidates the agent has surfaced · ${cands.length}`
+      : "candidates the agent has surfaced";
+    const list = document.getElementById("cand-list");
+    if (!cands.length) {
+      list.innerHTML = '<div class="cand"><span class="muted">No candidates published yet. The agent will populate this list as it processes TESS data.</span></div>';
+      return;
+    }
+    const sorted = cands.slice().sort((a, b) => (b.score || 0) - (a.score || 0));
+    list.innerHTML = sorted.map(c => {
+      const tierCls = c.tier || "moderate";
+      const lc = buildLightCurveSvg(c.period_days, c.depth, c.duration_days, c.n_transits);
+      const discShort = c.discovered_at
+        ? new Date(c.discovered_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+        : "—";
+      const gatesPassed = (c.gate_results || []).filter(g => g.passed).length;
+      const gatesTotal = (c.gate_results || []).length;
+      return `
+        <article class="cand">
+          <div class="cand-head">
+            <div class="cand-name">TIC ${c.tic_id}</div>
+            <span class="tier-badge ${tierCls}">${c.tier || "—"}</span>
+          </div>
+          <div class="cand-lc">${lc}</div>
+          <div class="cand-facts">
+            <span>period&nbsp;<b>${fmtPeriod(c.period_days)}</b></span>
+            <span>depth&nbsp;<b>${fmtPpm(c.depth)}</b></span>
+            <span>SDE&nbsp;<b>${fmtSde(c.sde)}</b></span>
+            <span>checks&nbsp;<b>${gatesTotal ? gatesPassed + "/" + gatesTotal : "—"}</b></span>
+            <span>found&nbsp;<b>${discShort}</b></span>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
   async function renderSessionMetrics() {
     const sess  = await safeJson("/session");
     const usage = await safeJson("/usage");
 
-    // Session length: wall clock since first boot.
     const sessEl = document.getElementById("m-session");
     if (sess && sess.uptime_seconds != null) {
       sessEl.textContent = humanDuration(sess.uptime_seconds * 1000);
     } else sessEl.textContent = "—";
 
-    // Active compute: runtime_gb_hours / (RAM in GB) = wall-clock hours awake.
     const actEl = document.getElementById("m-active");
     if (usage && usage.ok && usage.runtime_gb_hours != null) {
       const hours = usage.runtime_gb_hours / (RUNTIME_MB / 1024);
@@ -383,63 +586,27 @@
       actEl.textContent = usage && usage.error ? "unavailable" : "—";
     }
 
-    // Checkpoint cycles: direct from /v1/usage.
     const cycEl = document.getElementById("m-cycles");
     if (usage && usage.ok && usage.checkpoint_cycles != null) {
       cycEl.textContent = Number(usage.checkpoint_cycles).toLocaleString();
     } else cycEl.textContent = usage && usage.error ? "unavailable" : "—";
   }
 
-  /* —— Candidates (simplified cards) —— */
-  async function renderCandidates() {
-    const cands = (await safeJson("/candidates")) || [];
-    const kicker = document.getElementById("cand-kicker");
-    if (cands.length === 0) {
-      kicker.textContent = "candidates the agent has surfaced";
-    } else {
-      kicker.textContent = `candidates the agent has surfaced · ${cands.length}`;
-    }
-
-    const list = document.getElementById("cand-list");
-    if (!cands.length) {
-      list.innerHTML = '<div class="cand"><span class="muted">No candidates published yet. The agent will populate this list as it processes TESS data.</span></div>';
-      return;
-    }
-
-    const sorted = cands.slice().sort((a, b) => (b.score || 0) - (a.score || 0));
-    list.innerHTML = sorted.map(c => {
-      const tierCls = c.tier || "moderate";
-      const discShort = c.discovered_at
-        ? new Date(c.discovered_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
-        : "—";
-      const gatesPassed = (c.gate_results || []).filter(g => g.passed).length;
-      const gatesTotal = (c.gate_results || []).length;
-      const gatesStr = gatesTotal ? `${gatesPassed}/${gatesTotal} checks passed` : "";
-      return `
-        <article class="cand">
-          <div class="cand-head">
-            <div class="cand-name">TIC ${c.tic_id}</div>
-            <span class="tier-badge ${tierCls}">${c.tier || "—"}</span>
-          </div>
-          <div class="cand-sub">
-            period <b>${fmtPeriod(c.period_days)}</b>
-            <span class="dot-sep">·</span> depth <b>${fmtPpm(c.depth)}</b>
-            <span class="dot-sep">·</span> SDE <b>${fmtSde(c.sde)}</b>
-            ${gatesStr ? `<span class="dot-sep">·</span> ${gatesStr}` : ''}
-            <span class="dot-sep">·</span> ${discShort}
-          </div>
-        </article>`;
-    }).join("");
-  }
-
   async function tick() {
-    const h = await heartbeat();
+    // Parallel fetches to keep the page breathing at the 10s cadence.
+    const [h, cur, act, cands] = await Promise.all([
+      safeJson("/health"),
+      safeJson("/current"),
+      safeJson("/activity?limit=30"),
+      safeJson("/candidates"),
+    ]);
     renderStatus(h);
-    paintStrip();
-    await Promise.all([renderSessionMetrics(), renderCandidates()]);
+    renderNow(cur);
+    renderActivity(act || []);
+    renderCandidates(cands || []);
+    await renderSessionMetrics();
   }
   tick();
-  setInterval(paintStrip, 15_000);
   setInterval(tick, POLL_INTERVAL_MS);
 </script>
 </body>

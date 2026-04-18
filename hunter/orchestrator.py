@@ -48,8 +48,11 @@ try:
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import HTMLResponse, JSONResponse
 
+    from hunter.output.activity import log_info, read_recent
     from hunter.output.candidate import list_candidates
+    from hunter.output.current_state import mark_idle, read_current
     from hunter.pipeline import process_target
+    from hunter.hunt import load_tics
     from verification.orchestrator import is_halted, load_last_report, run_all
     _breadcrumb("imports ok")
 except Exception as _e:
@@ -64,16 +67,14 @@ logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s %(na
 DATA_DIR = Path(os.environ.get("HUNTER_DATA_DIR", "data"))
 HTTP_PORT = int(os.environ.get("HTTP_PORT", "8000"))
 BACKGROUND_ENABLED = os.environ.get("HUNTER_BACKGROUND", "1") != "0"
-HEALTH_INTERVAL_S = int(os.environ.get("HEALTH_INTERVAL_S", "3600"))  # hourly cheap checks
+AUTOHUNT_ENABLED = os.environ.get("HUNTER_AUTOHUNT", "1") != "0"
+HEALTH_INTERVAL_S = int(os.environ.get("HEALTH_INTERVAL_S", "3600"))
+AUTOHUNT_INTERVAL_S = int(os.environ.get("AUTOHUNT_INTERVAL_S", "300"))  # 5 min between targets
+AUTOHUNT_MIN_SDE = float(os.environ.get("AUTOHUNT_MIN_SDE", "8.0"))
 
 
-async def background_loop(stop: asyncio.Event) -> None:
-    """Minimal scheduler: runs cheap health checks every HEALTH_INTERVAL_S.
-
-    The per-sector hunt loop is invoked separately (by the operator or a
-    scheduled external trigger) via the /hunt/sector endpoint — we don't
-    want to trigger ~50K light-curve downloads automatically on boot.
-    """
+async def health_loop(stop: asyncio.Event) -> None:
+    """Hourly cheap pipeline-health pass."""
     while not stop.is_set():
         try:
             run_all(health_dir=DATA_DIR, enable_expensive=False)
@@ -85,21 +86,92 @@ async def background_loop(stop: asyncio.Event) -> None:
             pass
 
 
+async def autohunt_loop(stop: asyncio.Event) -> None:
+    """Autonomous hunter: walks the seed TIC list, processing one every
+    AUTOHUNT_INTERVAL_S. Loops around when it reaches the end.
+
+    The whole point of this page is to SHOW an agent working; a process
+    that only fires on POST /hunt/target silently isn't showing anything.
+    """
+    try:
+        tics = load_tics(None, None)
+    except Exception as e:
+        log.exception("autohunt: couldn't load seed TICs: %s", e)
+        return
+    if not tics:
+        log.warning("autohunt: empty seed list; not starting")
+        return
+
+    log_info(f"autohunt loop started · {len(tics)} seed TICs · {AUTOHUNT_INTERVAL_S}s cadence")
+    idx = 0
+    while not stop.is_set():
+        # Skip if the pipeline-health halt is set — never publish bad work.
+        if is_halted(DATA_DIR):
+            try:
+                await asyncio.wait_for(stop.wait(), timeout=AUTOHUNT_INTERVAL_S)
+            except asyncio.TimeoutError:
+                pass
+            continue
+
+        tic = tics[idx % len(tics)]
+        idx += 1
+
+        # Cheap "already have this one" skip: don't re-process a TIC we
+        # already published a candidate for. Re-enable later when we want
+        # multi-sector recurrence sweeps.
+        have = list_candidates(DATA_DIR / "candidates")
+        if any(c.tic_id == tic for c in have):
+            # Still step forward — keeps the loop moving visibly.
+            try:
+                await asyncio.wait_for(stop.wait(), timeout=5)
+            except asyncio.TimeoutError:
+                pass
+            continue
+
+        log.info("autohunt: processing TIC %d", tic)
+        try:
+            # Run in a thread — the pipeline does blocking MAST + TLS work.
+            await asyncio.to_thread(
+                process_target,
+                tic,
+                min_sde=AUTOHUNT_MIN_SDE,
+                known_candidates=have,
+                write_to=DATA_DIR / "candidates",
+            )
+        except Exception as e:
+            log.exception("autohunt: TIC %d raised: %s", tic, e)
+        finally:
+            try:
+                mark_idle()
+            except Exception:
+                pass
+
+        # Wait the configured interval before pulling the next target.
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=AUTOHUNT_INTERVAL_S)
+        except asyncio.TimeoutError:
+            pass
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Start background loop on app startup, cancel on shutdown."""
+    """Start background loops on app startup, cancel on shutdown."""
     stop = asyncio.Event()
-    task: Optional[asyncio.Task] = None
+    tasks: list[asyncio.Task] = []
     if BACKGROUND_ENABLED:
-        task = asyncio.create_task(background_loop(stop))
-        log.info("background health loop started (interval %ds)", HEALTH_INTERVAL_S)
+        tasks.append(asyncio.create_task(health_loop(stop)))
+        log.info("health loop started (interval %ds)", HEALTH_INTERVAL_S)
+    if AUTOHUNT_ENABLED:
+        tasks.append(asyncio.create_task(autohunt_loop(stop)))
+        log.info("autohunt loop started (interval %ds)", AUTOHUNT_INTERVAL_S)
     yield
-    if task:
+    if tasks:
         stop.set()
-        try:
-            await asyncio.wait_for(task, timeout=5)
-        except asyncio.TimeoutError:
-            task.cancel()
+        for t in tasks:
+            try:
+                await asyncio.wait_for(t, timeout=5)
+            except asyncio.TimeoutError:
+                t.cancel()
 
 
 app = FastAPI(title="orb-exoplanet-hunter", lifespan=lifespan)
@@ -260,6 +332,24 @@ def hunt_target(tic: int, min_sde: float = 8.0) -> dict:
             "n_sectors_confirmed": res.candidate.n_sectors_confirmed,
         },
     }
+
+
+@app.get("/current")
+def current_task() -> dict:
+    """What the hunter is doing *right now*. The dashboard polls this every
+    few seconds to render a pulsing "NOW: processing TIC X · stage Y" banner.
+    """
+    return read_current(DATA_DIR / "current-task.json")
+
+
+@app.get("/activity")
+def activity(limit: int = 30) -> list[dict]:
+    """Last `limit` entries from the activity log (newest first).
+    Each entry is an ActivityEvent row: ts / kind (processing|accepted|
+    rejected|health|info) / tic_id / stage / reason / tier / metrics.
+    """
+    limit = max(1, min(200, limit))
+    return read_recent(limit, DATA_DIR / "activity.jsonl")
 
 
 @app.get("/pipeline-health")
