@@ -1,0 +1,41 @@
+orb-exoplanet-hunter — build log
+=================================
+
+Niche locked: M-dwarf habitable-zone candidate surfacer. SPOC/QLP focus on
+brighter targets + shorter periods; faint-M-dwarf FFIs are under-searched
+and the HZ regime has the strongest "potentially habitable" story.
+
+Stack decisions:
+  - Python 3.10+ (every exoplanet tool — lightkurve, wotan, TLS, TRICERATOPS
+    — is Python-native; rewriting in TS would be painful and add no value).
+  - lang=python in orb.toml (native Orb runtime — no bin/start wrapper).
+  - Z.AI GLM Coding Plan for LLM calls (ANTHROPIC_AUTH_TOKEN + BASE_URL to
+    the Anthropic-compatible proxy). Cheap enough for weekly red-team.
+  - HTTP_PORT (not ORB_PORT — Orb reserves that).
+  - Build must `git fetch + reset` first; Orb doesn't re-clone on rebuild.
+  - Resource floor: 8GB RAM / 30GB disk. Exoplanet stack is heavy + TESS
+    light curves accumulate on disk.
+
+Verification architecture (the part that makes the showcase credible):
+  - 10 per-candidate hard gates; 1 fail = candidate dropped.
+  - 6 pipeline-health checks nightly (known-planet recovery, injection-
+    recovery sweep, null-data FP rate, ephemeris consistency, depth
+    distribution sanity, Claude red-team review). Any hard check fails
+    -> pipeline into read-only, operator alert.
+
+Batch plan:
+  Batch 1 — scaffold + ingest + detrend + search + TOI-700 recovery test
+  Batch 2 — 9-gate per-candidate vetting chain
+  Batch 3 — TRICERATOPS FPP + ranking + multi-sector recurrence
+  Batch 4 — pipeline-health verification loops
+  Batch 5 — orchestrator + FastAPI dashboard
+  Batch 6 — Orb deploy + launch polish
+
+Commit rhythm: commit after every small step, push at 5.
+
+Batch 1 — scaffold + detection pipeline (in progress)
+  [ ] commit 1: scaffold (README, LICENSE, orb.toml, pyproject, requirements, dirs, learnings)
+  [ ] commit 2: hunter/ingest/tess.py — lightkurve wrapper + unit test with synthetic LC
+  [ ] commit 3: hunter/detrend/wotan_wrap.py — biweight detrend + unit test
+  [ ] commit 4: hunter/search/tls_search.py — TLS wrapper + synthetic recovery test
+  [ ] commit 5: integration test — end-to-end recovery of TOI-700 d from real TESS data

@@ -1,0 +1,29 @@
+# Data + science stack
+numpy>=1.26,<2.2
+scipy>=1.11
+pandas>=2.1
+astropy>=6.0
+astroquery>=0.4.7
+
+# Exoplanet tooling
+lightkurve>=2.4
+wotan>=1.10
+transitleastsquares>=1.32
+
+# Statistics / validation
+scikit-learn>=1.4
+
+# Dashboard
+fastapi>=0.115
+uvicorn[standard]>=0.32
+jinja2>=3.1
+
+# Narrative generation (weekly red-team + summaries)
+anthropic>=0.40
+
+# Runtime
+python-dotenv>=1.0
+
+# Dev / testing
+pytest>=8.0
+pytest-xdist>=3.6

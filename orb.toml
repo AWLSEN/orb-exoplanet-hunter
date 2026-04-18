@@ -1,0 +1,50 @@
+# orb.toml — Orb Cloud deploy spec for orb-exoplanet-hunter.
+# Python is a native Orb language (no bin/start wrapper needed).
+
+[agent]
+name  = "orb-exoplanet-hunter"
+lang  = "python"
+entry = "hunter/orchestrator.py"
+
+[source]
+git    = "https://github.com/AWLSEN/orb-exoplanet-hunter"
+branch = "main"
+
+[build]
+# git fetch+reset first — Orb only git-clones on first build; subsequent POST
+# /build calls reuse /agent/code and would be stale without an explicit sync.
+steps = [
+    "git fetch origin main && git reset --hard origin/main",
+    "pip install --upgrade pip",
+    "pip install -r requirements.txt",
+    "python -c 'import lightkurve, wotan, transitleastsquares'",
+]
+
+[llm]
+# Z.AI GLM Coding Plan proxy (Anthropic-compatible). Cheap enough to narrate
+# weekly summaries + run red-team review without eating the budget.
+base_url = "https://api.z.ai/api/anthropic"
+model    = "claude-opus-4-7"
+
+[ports]
+# FastAPI dashboard. Accessible at https://{short_id}.orbcloud.dev.
+expose = [8000]
+
+[resources]
+# Exoplanet stack (numpy + scipy + TLS + lightkurve) needs headroom.
+# Runtime checkpoints to NVMe during long sleeps so effective cost is low.
+runtime_mb = 8192
+disk_mb    = 30720
+
+[agent.env]
+# HTTP_PORT — not ORB_PORT! Orb reserves ORB_PORT for internal routing.
+HTTP_PORT              = "8000"
+PYTHONUNBUFFERED       = "1"
+HUNTER_SECTORS         = "69,70"
+HUNTER_MAX_TARGETS     = "5000"
+HUNTER_SDE_FLOOR       = "8.0"
+ANTHROPIC_BASE_URL     = "https://api.z.ai/api/anthropic"
+ANTHROPIC_MODEL        = "claude-opus-4-7"
+
+# Secrets forwarded via POST /agents org_secrets at deploy time.
+ANTHROPIC_AUTH_TOKEN   = "${ANTHROPIC_AUTH_TOKEN}"

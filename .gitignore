@@ -1,0 +1,29 @@
+# --- env / secrets ---
+.env
+.env.local
+.orb-state/
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# --- runtime data (grows huge — lives on Orb volume, not in git) ---
+data/sectors/
+data/candidates/
+data/vetting/
+data/mast-cache/
+data/injection-tests/
+data/null-tests/
+logs/
+
+# --- OS ---
+.DS_Store
