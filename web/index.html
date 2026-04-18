@@ -135,6 +135,41 @@
     .stage.done { color: var(--good); background: #ecfdf5; border-color: #a7f3d0; }
     .stage.active { color: var(--accent); background: #eff6ff; border-color: #bfdbfe; font-weight: 500; }
 
+    /* Activity strip (60-min awake/sleeping timeline) */
+    .strip-wrap {
+      margin-top: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .strip {
+      display: grid;
+      grid-template-columns: repeat(60, 1fr);
+      gap: 2px;
+      height: 44px;
+    }
+    .slice {
+      background: #eeece6;
+      border-radius: 2px;
+      transition: background-color 140ms ease;
+    }
+    .slice.awake { background: #86efac; }
+    .slice.awake.recent { background: #22c55e; }
+    .slice.now { outline: 1.5px solid var(--accent); outline-offset: 1.5px; position: relative; z-index: 1; }
+    .strip-axis {
+      display: flex; justify-content: space-between; margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-very-dim);
+    }
+    .strip-legend {
+      display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 10px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);
+    }
+    .strip-legend .box {
+      display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+      vertical-align: -1px; margin-right: 6px;
+    }
+
     /* Activity list */
     .activity-list {
       margin-top: 14px;
@@ -298,6 +333,23 @@
     </div>
   </section>
 
+  <!-- Activity strip — 60-min awake/sleeping timeline -->
+  <section>
+    <div class="kicker">agent activity · last 60 minutes</div>
+    <div class="strip-wrap">
+      <div class="strip" id="strip"></div>
+      <div class="strip-axis">
+        <span>60 min ago</span>
+        <span id="strip-now">now</span>
+      </div>
+      <div class="strip-legend">
+        <span><span class="box" style="background:#22c55e;"></span>awake (this minute)</span>
+        <span><span class="box" style="background:#86efac;"></span>awake (earlier)</span>
+        <span><span class="box" style="background:#eeece6;"></span>sleeping</span>
+      </div>
+    </div>
+  </section>
+
   <!-- Activity feed -->
   <section>
     <div class="kicker"><span id="activity-kicker">recent activity</span></div>
@@ -380,6 +432,8 @@
   const POLL_INTERVAL_MS = 10_000;
   const STAGES = ["fetch","detrend","search","vet","write"];
   const RUNTIME_MB = 8192;
+  const STRIP_MINUTES = 60;
+  const STORAGE_KEY = "exoplanet_hunter_activity_v2";
 
   async function safeJson(path, timeoutMs = 6000) {
     try {
@@ -414,6 +468,64 @@
     if (diff < 3_600_000) return Math.round(diff / 60_000) + "m ago";
     if (diff < 86_400_000) return Math.round(diff / 3_600_000) + "h ago";
     return Math.round(diff / 86_400_000) + "d ago";
+  }
+
+  /* Activity strip — merges client /health heartbeat + server /activity events
+     so the strip fills even on a fresh page load (we seed it from server events
+     that already happened in the last hour). */
+  function loadLocalActivity() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  }
+  function saveLocalActivity(set) {
+    // Keep last 24h bounded.
+    const cutoff = Math.floor(Date.now() / 60000) - 24 * 60;
+    const kept = Array.from(set).filter(m => m >= cutoff);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(kept)); } catch {}
+    return new Set(kept);
+  }
+  function recordHeartbeat(h) {
+    if (h && h.ok && !h.halted) {
+      const nowMin = Math.floor(Date.now() / 60000);
+      const set = loadLocalActivity();
+      set.add(nowMin);
+      saveLocalActivity(set);
+    }
+  }
+  function mergeServerEvents(events) {
+    // Mark every minute that contained a server event as awake.
+    const set = loadLocalActivity();
+    const cutoff = Math.floor(Date.now() / 60000) - STRIP_MINUTES;
+    for (const e of events || []) {
+      if (!e.ts) continue;
+      const t = Date.parse(e.ts);
+      if (isNaN(t)) continue;
+      const min = Math.floor(t / 60000);
+      if (min >= cutoff) set.add(min);
+    }
+    saveLocalActivity(set);
+  }
+  function paintStrip() {
+    const strip = document.getElementById("strip");
+    if (!strip) return;
+    const nowMin = Math.floor(Date.now() / 60000);
+    const active = loadLocalActivity();
+    strip.innerHTML = "";
+    for (let i = 0; i < STRIP_MINUTES; i++) {
+      const minute = nowMin - (STRIP_MINUTES - 1 - i);
+      const d = document.createElement("div");
+      d.className = "slice";
+      if (active.has(minute)) d.classList.add("awake");
+      if (minute >= nowMin - 1 && active.has(minute)) d.classList.add("recent");
+      if (i === STRIP_MINUTES - 1) d.classList.add("now");
+      const ago = (STRIP_MINUTES - 1 - i);
+      d.title = (active.has(minute) ? "awake " : "sleeping ") +
+                (ago === 0 ? "now" : (ago === 1 ? "1 min ago" : ago + " min ago"));
+      strip.appendChild(d);
+    }
+    document.getElementById("strip-now").textContent = new Date().toUTCString().slice(17, 22) + " UTC";
   }
 
   function renderStatus(h) {
@@ -597,9 +709,12 @@
     const [h, cur, act, cands] = await Promise.all([
       safeJson("/health"),
       safeJson("/current"),
-      safeJson("/activity?limit=30"),
+      safeJson("/activity?limit=120"),
       safeJson("/candidates"),
     ]);
+    recordHeartbeat(h);
+    mergeServerEvents(act || []);
+    paintStrip();
     renderStatus(h);
     renderNow(cur);
     renderActivity(act || []);
@@ -607,6 +722,9 @@
     await renderSessionMetrics();
   }
   tick();
+  // Fast re-paint of the strip between full ticks so the "now" marker slides
+  // forward visibly as minutes tick over.
+  setInterval(paintStrip, 15_000);
   setInterval(tick, POLL_INTERVAL_MS);
 </script>
 </body>
