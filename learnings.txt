@@ -44,6 +44,17 @@ Batch 1 — scaffold + detection pipeline (DONE)
   detrended, ran TLS — recovered period 1.27512d vs known 1.27493d
   (0.015% error), SDE=32.44, depth=15530ppm, n_transits=17. Pipeline is real.
 
+Batch 2 — per-candidate vetting chain (DONE)
+  [x] commit 6: hunter/vet/types.py + hunter/vet/odd_even.py (5 tests)
+  [x] commit 7: hunter/vet/secondary.py — secondary eclipse detection (5 tests)
+  [x] commit 8: hunter/vet/ephemeris_match.py — NASA Archive TOI cross-match (11 tests)
+  [x] commit 9: hunter/vet/gaia_ruwe.py — RUWE unresolved-binary detector (10 tests)
+  [x] commit 10: hunter/vet/__init__.py — chain orchestrator + short-circuit (7 tests)
+  Totals: 63 unit + 2 integration tests, all green.
+  Gate order locked (cheapest first): odd_even → secondary → ephemeris_match → gaia_ruwe.
+  Centroid-shift gate deferred to Batch 3 (TRICERATOPS's FPP covers blend rejection
+  statistically, stricter than a centroid heuristic).
+
 Deploy gotchas accumulated this batch:
   - lightkurve search returns heterogeneous products; filter to author="SPOC"
     by default or hit corrupt FITS reads on T16/QLP entries. Added per-entry
