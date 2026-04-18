@@ -42,8 +42,18 @@ class RecurrenceCluster:
         return len(self.sectors)
 
 
-def _ephemeris_matches(a: CandidateEphemeris, b: CandidateEphemeris, rel_tol: float) -> bool:
-    """True when a and b share ephemeris within tolerance."""
+def _ephemeris_matches(
+    a: CandidateEphemeris,
+    b: CandidateEphemeris,
+    rel_tol: float,
+    phase_tol: float = 0.05,
+) -> bool:
+    """True when a and b share ephemeris within tolerance.
+
+    `rel_tol` governs period matching; `phase_tol` governs T0 phase match
+    (separately tunable because TLS T0 recovery uncertainty is dominated
+    by transit-duration, not by period precision).
+    """
     if a.tic_id != b.tic_id:
         return False
     if a.period_days <= 0 or b.period_days <= 0:
@@ -57,7 +67,7 @@ def _ephemeris_matches(a: CandidateEphemeris, b: CandidateEphemeris, rel_tol: fl
             dt = abs(b.t0_bjd - a.t0_bjd)
             phase = (dt % common_period) / common_period
             phase = min(phase, 1 - phase)
-            if phase < rel_tol:
+            if phase < phase_tol:
                 return True
     return False
 
