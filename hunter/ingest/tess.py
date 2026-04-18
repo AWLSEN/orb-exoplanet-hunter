@@ -87,17 +87,18 @@ def normalize(time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray) -> tuple
     return time, flux, flux_err
 
 
-def _cache_path(cache_dir: Path, tic_id: int, sector: int, cadence_s: float) -> Path:
+def _cache_path(cache_dir: Path | str, tic_id: int, sector: int, cadence_s: float) -> Path:
     """Cached file layout: data/mast-cache/<tic>/<sector>-<cadence>.npz."""
+    cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
     tic_dir = cache_dir / f"tic{tic_id}"
     tic_dir.mkdir(exist_ok=True)
     return tic_dir / f"s{sector:02d}-c{int(cadence_s)}.npz"
 
 
-def save_cached(lc: LightCurve, cache_dir: Path = DEFAULT_CACHE_DIR) -> Path:
+def save_cached(lc: LightCurve, cache_dir: Path | str = DEFAULT_CACHE_DIR) -> Path:
     """Serialize a LightCurve to npz for later reuse."""
-    path = _cache_path(cache_dir, lc.tic_id, lc.sector, lc.cadence_s)
+    path = _cache_path(Path(cache_dir), lc.tic_id, lc.sector, lc.cadence_s)
     np.savez_compressed(
         path,
         time=lc.time,
@@ -111,9 +112,9 @@ def save_cached(lc: LightCurve, cache_dir: Path = DEFAULT_CACHE_DIR) -> Path:
     return path
 
 
-def load_cached(tic_id: int, sector: int, cadence_s: float = 600, cache_dir: Path = DEFAULT_CACHE_DIR) -> Optional[LightCurve]:
+def load_cached(tic_id: int, sector: int, cadence_s: float = 600, cache_dir: Path | str = DEFAULT_CACHE_DIR) -> Optional[LightCurve]:
     """Return a cached LightCurve or None if the file isn't there."""
-    path = _cache_path(cache_dir, tic_id, sector, cadence_s)
+    path = _cache_path(Path(cache_dir), tic_id, sector, cadence_s)
     if not path.exists():
         return None
     with np.load(path, allow_pickle=False) as f:
@@ -132,19 +133,22 @@ def fetch_tic(
     tic_id: int,
     sector: Optional[int] = None,
     cadence_s: float = 600,
-    cache_dir: Path = DEFAULT_CACHE_DIR,
+    cache_dir: Path | str = DEFAULT_CACHE_DIR,
     force: bool = False,
+    author: str = "SPOC",
 ) -> LightCurve:
     """Fetch (and cache) a TESS light curve for a TIC ID.
 
-    If `sector` is None, the longest available sector is chosen.
-    `cadence_s`: 120 for 2-min SPOC, 600 for 10-min FFI. We default to FFI
-    because that's where the M-dwarf coverage lives.
+    If `sector` is None, the first readable light curve is returned.
+    `cadence_s`: 120 for 2-min SPOC, 600 for 10-min FFI. Default 600 because
+    most M-dwarf coverage lives in FFIs.
 
-    Network calls go through `lightkurve.search_lightcurve` which in turn
-    hits MAST. Import is deferred so unit tests can run without the
-    network-heavy dependency chain.
+    `author="SPOC"` by default — the official TESS pipeline with reliably
+    formatted FITS. Other authors (T16, QLP, CDIPS, TESS-SPOC) are valid
+    but produce heterogeneous products that sometimes break lightkurve's
+    reader. Override only when you know what you're doing.
     """
+    cache_dir = Path(cache_dir)
     if sector is not None:
         hit = load_cached(tic_id, sector, cadence_s, cache_dir)
         if hit and not force:
@@ -155,42 +159,64 @@ def fetch_tic(
         warnings.simplefilter("ignore")
         import lightkurve as lk
 
-    search = lk.search_lightcurve(f"TIC {tic_id}", mission="TESS")
+    search = lk.search_lightcurve(f"TIC {tic_id}", mission="TESS", author=author)
     if len(search) == 0:
-        raise LookupError(f"no TESS light curves found for TIC {tic_id}")
+        raise LookupError(
+            f"no TESS light curves found for TIC {tic_id} (author={author})"
+        )
 
     if sector is not None:
-        search = search[[int(s) == sector for s in search.mission.tolist() and [int(m.split()[-1]) if m.startswith("TESS Sector") else -1 for m in search.mission.tolist()]]] if False else search[
-            np.array([_extract_sector_from_mission(m) == sector for m in search.mission.tolist()])
-        ]
+        mask = np.array([_extract_sector_from_mission(m) == sector for m in search.mission.tolist()])
+        search = search[mask]
         if len(search) == 0:
             raise LookupError(f"no TESS sector {sector} light curve for TIC {tic_id}")
 
-    # Pick the longest single-sector light curve.
-    lc_raw = search.download_all(quality_bitmask="default")
-    if lc_raw is None or len(lc_raw) == 0:
-        raise LookupError(f"download returned empty for TIC {tic_id}")
+    # Download a single product at a time so one bad FITS doesn't nuke the
+    # whole batch. Try longest-span candidate first; on read failure, delete
+    # the cached FITS and fall through to the next.
+    ordered = list(search)
+    # Prefer rows with the longest estimated exposure baseline (sector length).
+    # lightkurve SearchResult rows don't expose baseline directly, so we just
+    # try each in turn.
+    last_err: Exception | None = None
+    for entry in ordered:
+        try:
+            lc_raw = entry.download(quality_bitmask="default")
+        except Exception as e:
+            last_err = e
+            log.warning("lightkurve download failed for TIC %d: %s", tic_id, e)
+            continue
+        if lc_raw is None or len(lc_raw.time) == 0:
+            last_err = LookupError("download returned empty LC")
+            continue
 
-    lc_raw = max(lc_raw, key=lambda x: len(x.time))
-    resolved_sector = _sector_of(lc_raw)
-    source = f"lightkurve:{getattr(lc_raw, 'author', 'unknown') or 'unknown'}"
+        try:
+            time_arr = np.asarray(lc_raw.time.value, dtype=np.float64)
+            flux_arr = np.asarray(lc_raw.flux.value, dtype=np.float64)
+            err_arr = np.asarray(lc_raw.flux_err.value, dtype=np.float64)
+            time_arr, flux_arr, err_arr = normalize(time_arr, flux_arr, err_arr)
+        except Exception as e:
+            last_err = e
+            continue
 
-    time_arr = np.asarray(lc_raw.time.value, dtype=np.float64)
-    flux_arr = np.asarray(lc_raw.flux.value, dtype=np.float64)
-    err_arr = np.asarray(lc_raw.flux_err.value, dtype=np.float64)
-    time_arr, flux_arr, err_arr = normalize(time_arr, flux_arr, err_arr)
+        resolved_sector = _sector_of(lc_raw)
+        source = f"lightkurve:{getattr(lc_raw, 'author', author) or author}"
+        lc = LightCurve(
+            tic_id=tic_id,
+            sector=resolved_sector,
+            time=time_arr,
+            flux=flux_arr,
+            flux_err=err_arr,
+            cadence_s=cadence_s,
+            source=source,
+        )
+        save_cached(lc, cache_dir)
+        return lc
 
-    lc = LightCurve(
-        tic_id=tic_id,
-        sector=resolved_sector,
-        time=time_arr,
-        flux=flux_arr,
-        flux_err=err_arr,
-        cadence_s=cadence_s,
-        source=source,
+    raise LookupError(
+        f"could not read any TESS light curve for TIC {tic_id}; "
+        f"last error: {last_err}"
     )
-    save_cached(lc, cache_dir)
-    return lc
 
 
 def _extract_sector_from_mission(mission: str) -> int:

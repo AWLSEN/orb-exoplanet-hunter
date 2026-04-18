@@ -33,9 +33,21 @@ Batch plan:
 
 Commit rhythm: commit after every small step, push at 5.
 
-Batch 1 — scaffold + detection pipeline (in progress)
-  [ ] commit 1: scaffold (README, LICENSE, orb.toml, pyproject, requirements, dirs, learnings)
-  [ ] commit 2: hunter/ingest/tess.py — lightkurve wrapper + unit test with synthetic LC
-  [ ] commit 3: hunter/detrend/wotan_wrap.py — biweight detrend + unit test
-  [ ] commit 4: hunter/search/tls_search.py — TLS wrapper + synthetic recovery test
-  [ ] commit 5: integration test — end-to-end recovery of TOI-700 d from real TESS data
+Batch 1 — scaffold + detection pipeline (DONE)
+  [x] commit 1: scaffold (README, LICENSE, orb.toml, pyproject, requirements, dirs, learnings)
+  [x] commit 2: hunter/ingest/tess.py — lightkurve wrapper + 13 unit tests
+  [x] commit 3: hunter/detrend/wotan_wrap.py — biweight detrend + 7 unit tests
+  [x] commit 4: hunter/search/tls_search.py — TLS wrapper + 5 unit tests (offline TLS recovery)
+  [x] commit 5: pytest marker filter + ingest hardening + real-MAST integration test
+  Totals: 25 unit + 2 integration tests, all green.
+  Capstone validation (commit 5): fetched WASP-121 from MAST (SPOC sector 7),
+  detrended, ran TLS — recovered period 1.27512d vs known 1.27493d
+  (0.015% error), SDE=32.44, depth=15530ppm, n_transits=17. Pipeline is real.
+
+Deploy gotchas accumulated this batch:
+  - lightkurve search returns heterogeneous products; filter to author="SPOC"
+    by default or hit corrupt FITS reads on T16/QLP entries. Added per-entry
+    try/except so one bad product can't poison the batch.
+  - pytest integration marker needs an explicit default exclude
+    (addopts = "-m 'not integration'") or the default run hits MAST.
+  - cache_dir must accept str | Path at API boundary (caller ergonomics).

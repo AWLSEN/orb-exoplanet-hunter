@@ -19,9 +19,11 @@ dependencies = { file = "requirements.txt" }
 include = ["hunter*", "verification*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-# Integration tests hit MAST; they're opt-in via the env var.
-addopts = "-q --strict-markers"
+# Default run stays offline: unit tests only. Opt in to integration with
+#   pytest -m integration tests/integration
+# or override addopts: pytest -o addopts=''
+testpaths = ["tests/unit"]
+addopts = "-q --strict-markers -m 'not integration'"
 markers = [
     "integration: requires network access to MAST/Gaia archives",
 ]
