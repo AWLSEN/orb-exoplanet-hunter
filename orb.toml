@@ -17,9 +17,12 @@ steps = [
     "git fetch origin main && git reset --hard origin/main",
     "pip install --upgrade pip",
     "pip install -r requirements.txt",
+    # Install our own packages (hunter/, verification/) into site-packages so
+    # `python3 hunter/orchestrator.py` can import them without PYTHONPATH gymnastics.
+    "pip install -e .",
     # Container exposes `python3`, not `python`, so validate imports with the
     # name that actually exists on PATH.
-    "python3 -c 'import lightkurve, wotan, transitleastsquares, fastapi, uvicorn'",
+    "python3 -c 'import hunter.orchestrator, verification.orchestrator, lightkurve, wotan, transitleastsquares, fastapi, uvicorn'",
 ]
 
 [llm]
