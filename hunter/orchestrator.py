@@ -45,6 +45,7 @@ try:
     from typing import Optional
 
     from fastapi import FastAPI, HTTPException
+    from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import HTMLResponse, JSONResponse
 
     from hunter.output.candidate import list_candidates
@@ -102,6 +103,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="orb-exoplanet-hunter", lifespan=lifespan)
+
+# CORS: the Vercel-hosted visual dashboard fetches /candidates, /health, and
+# /pipeline-health from this origin cross-origin, so browsers need the
+# Access-Control-* headers. Allow everything read-only; POST /hunt/target is
+# on the same origin so it doesn't need CORS.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+    allow_credentials=False,
+)
 
 
 @app.get("/health")
