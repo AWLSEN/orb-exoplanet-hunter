@@ -53,3 +53,7 @@ ANTHROPIC_MODEL        = "claude-opus-4-7"
 
 # Secrets forwarded via POST /agents org_secrets at deploy time.
 ANTHROPIC_AUTH_TOKEN   = "${ANTHROPIC_AUTH_TOKEN}"
+# ORB_API_KEY is used by /usage to proxy the /v1/usage endpoint (so the
+# public Vercel dashboard can show real runtime_gb_hours + checkpoint_cycles
+# without carrying the key in the browser).
+ORB_API_KEY            = "${ORB_API_KEY}"

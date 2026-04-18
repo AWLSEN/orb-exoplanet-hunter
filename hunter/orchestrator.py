@@ -128,6 +128,84 @@ def health() -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Session + usage endpoints — surface what the dashboard needs to show
+# ACCURATE "session length / active compute / checkpoint cycles" instead of
+# guessing from candidate timestamps.
+#
+# `first_boot` is persisted to disk on first process start and never
+# overwritten thereafter — so it survives Orb checkpoints and gives us an
+# honest wall-clock session length.
+# ---------------------------------------------------------------------------
+FIRST_BOOT_FILE = DATA_DIR / "first-boot.txt"
+
+
+def _ensure_first_boot() -> str:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if FIRST_BOOT_FILE.exists():
+        return FIRST_BOOT_FILE.read_text().strip()
+    iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    FIRST_BOOT_FILE.write_text(iso)
+    return iso
+
+
+@app.get("/session")
+def session_info() -> dict:
+    """Honest session stats: wall clock since the very first process start
+    (persisted to disk so it survives checkpoints)."""
+    first = _ensure_first_boot()
+    first_t = time.mktime(time.strptime(first, "%Y-%m-%dT%H:%M:%SZ"))
+    now_t = time.time()
+    return {
+        "first_boot": first,
+        "uptime_seconds": max(0, int(now_t - first_t)),
+    }
+
+
+@app.get("/usage")
+def usage_info() -> dict:
+    """Proxy to Orb's /v1/usage so the dashboard can show real
+    checkpoint_cycles / runtime_gb_hours without needing the api key in
+    the browser. Reads ORB_API_KEY from env; returns a summary if set,
+    or a helpful error otherwise.
+    """
+    import urllib.parse
+    import urllib.request
+
+    key = os.environ.get("ORB_API_KEY")
+    if not key:
+        return {"ok": False, "error": "ORB_API_KEY not set on agent"}
+
+    # Last 30 days — the usage endpoint aggregates org-wide so this is
+    # deliberately generous.
+    end = time.gmtime()
+    end_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", end)
+    start_epoch = time.time() - 30 * 86400
+    start_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(start_epoch))
+
+    qs = urllib.parse.urlencode({"start": start_iso, "end": end_iso})
+    req = urllib.request.Request(
+        f"https://api.orbcloud.dev/v1/usage?{qs}",
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+    return {
+        "ok": True,
+        "period": {"start": start_iso, "end": end_iso},
+        "runtime_gb_hours": data.get("runtime_gb_hours"),
+        "disk_gb_hours": data.get("disk_gb_hours"),
+        "checkpoint_cycles": data.get("checkpoint_cycles"),
+        "computers_created": data.get("computers_created"),
+        # Org-wide; note to dashboard so it can label honestly.
+        "scope": "org-wide",
+    }
+
+
 @app.get("/candidates")
 def candidates(tier: str | None = None, min_score: float = 0.0) -> list[dict]:
     """Return all candidates, optionally filtered by tier/score."""
