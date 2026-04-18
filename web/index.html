@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Exoplanet Hunter — orb-exoplanet-hunter</title>
+  <meta name="description" content="An AI running on Orb Cloud, searching TESS data for new planets around other stars. Live candidate dashboard.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05070a;
+      --bg-elev: #0b0e14;
+      --border: #141a24;
+      --text: #e6edf7;
+      --text-dim: #7a8499;
+      --text-very-dim: #3d4658;
+      --accent: #7dd3fc;      /* sky-300 */
+      --accent-deep: #0891b2; /* cyan-600 */
+      --good: #86efac;
+      --warn: #fbbf24;
+      --bad:  #fca5a5;
+      --tier-confirmed: #86efac;
+      --tier-strong:    #fde68a;
+      --tier-moderate:  #93c5fd;
+      --tier-weak:      #64748b;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 900px 500px at 50% 0%, rgba(125,211,252,0.07), transparent 60%),
+        radial-gradient(ellipse 700px 300px at 85% 40%, rgba(8,145,178,0.05), transparent 60%);
+      background-attachment: fixed;
+    }
+
+    .wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px 96px; }
+
+    /* ---------- Hero ---------- */
+    .hero h1 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(42px, 8vw, 76px);
+      font-weight: 400;
+      line-height: 1.05;
+      margin: 48px 0 20px;
+      letter-spacing: -0.01em;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero .tag {
+      font-size: clamp(16px, 2.2vw, 19px);
+      color: var(--text-dim);
+      max-width: 600px;
+      line-height: 1.5;
+    }
+    .hero .status-row {
+      margin-top: 32px;
+      display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--text-very-dim);
+      box-shadow: 0 0 0 0 currentColor;
+    }
+    .pill.alive .dot { background: var(--good); animation: pulse 2.2s ease-in-out infinite; }
+    .pill.halted .dot { background: var(--bad); }
+    .pill.alive { color: var(--good); border-color: rgba(134,239,172,0.25); }
+    .pill.halted { color: var(--bad); border-color: rgba(252,165,165,0.3); }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(134,239,172,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(134,239,172,0); }
+    }
+
+    /* ---------- Section ---------- */
+    section { margin-top: 72px; }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-very-dim);
+      margin-bottom: 14px;
+    }
+    h2 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 400;
+      margin: 0 0 12px;
+      letter-spacing: -0.01em;
+    }
+    h2 em { font-style: italic; color: var(--accent); }
+    .lede { color: var(--text-dim); max-width: 620px; margin: 0 0 28px; }
+
+    /* ---------- Sample-signal panel ---------- */
+    .panel {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .panel.mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+    .signal-svg { width: 100%; height: auto; display: block; }
+    .signal-caption {
+      display: flex; flex-wrap: wrap; gap: 16px 24px;
+      margin-top: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+    .signal-caption b { color: var(--text); font-weight: 500; }
+
+    /* ---------- Hero numbers ---------- */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .stat {
+      background: var(--bg-elev);
+      padding: 22px 18px;
+    }
+    .stat .k {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-very-dim);
+    }
+    .stat .v {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 40px;
+      line-height: 1;
+      margin-top: 10px;
+      letter-spacing: -0.01em;
+    }
+    .stat.accent .v { color: var(--accent); }
+
+    /* ---------- Time-slice grid ---------- */
+    .slices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14px, 1fr));
+      gap: 3px;
+      padding: 12px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .slice {
+      aspect-ratio: 1;
+      background: var(--border);
+      border-radius: 2px;
+      position: relative;
+    }
+    .slice.active  { background: var(--good); }
+    .slice.asleep  { background: var(--border); }
+    .slice.current { outline: 1px solid var(--accent); outline-offset: 1px; }
+    .slice-legend {
+      display: flex; gap: 20px; margin-top: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text-dim);
+    }
+    .slice-legend .box {
+      display: inline-block; width: 11px; height: 11px; vertical-align: -1px; margin-right: 6px;
+      border-radius: 2px;
+    }
+
+    /* ---------- Candidate cards ---------- */
+    .candidates { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .candidate {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .candidate .top {
+      display: flex; justify-content: space-between; align-items: baseline;
+      flex-wrap: wrap; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .candidate .title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 22px;
+    }
+    .candidate .tic {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-very-dim);
+      letter-spacing: 0.05em;
+    }
+    .tier-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+    }
+    .tier-badge.confirmed { color: var(--tier-confirmed); background: rgba(134,239,172,0.08); }
+    .tier-badge.strong    { color: var(--tier-strong);    background: rgba(253,230,138,0.08); }
+    .tier-badge.moderate  { color: var(--tier-moderate);  background: rgba(147,197,253,0.08); }
+    .tier-badge.weak      { color: var(--tier-weak); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 6px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      margin: 10px 0 14px;
+    }
+    .metrics .k { color: var(--text-very-dim); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .metrics .v { color: var(--text); }
+
+    .gates {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    }
+    .gate { padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); }
+    .gate.pass  { color: var(--good); border-color: rgba(134,239,172,0.25); }
+    .gate.soft  { color: var(--warn); border-color: rgba(251,191,36,0.25); }
+    .gate.hard  { color: var(--bad);  border-color: rgba(252,165,165,0.3); }
+    .gate::before { margin-right: 4px; }
+    .gate.pass::before { content: "✓"; }
+    .gate.soft::before { content: "⚠"; }
+    .gate.hard::before { content: "✗"; }
+
+    /* ---------- Health panel ---------- */
+    .health { display: flex; flex-direction: column; gap: 6px; }
+    .health-row {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+      padding: 10px 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    .health-row .n { color: var(--text); }
+    .health-row .r { color: var(--text-dim); flex: 1; }
+    .health-row .s.pass { color: var(--good); }
+    .health-row .s.soft { color: var(--warn); }
+    .health-row .s.hard { color: var(--bad); }
+
+    /* ---------- Copy rails ---------- */
+    .rail {
+      background: var(--bg-elev);
+      border-left: 2px solid var(--accent);
+      padding: 18px 22px;
+      border-radius: 4px;
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 20px;
+      font-style: italic;
+      color: var(--text);
+      max-width: 640px;
+    }
+    .rail .by {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-style: normal;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-very-dim);
+      display: block;
+      margin-top: 8px;
+    }
+
+    /* ---------- Links / footer ---------- */
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted currentColor; }
+    a:hover { color: #bae6fd; }
+    .footer {
+      margin-top: 80px; padding-top: 28px; border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-very-dim);
+      display: flex; flex-wrap: wrap; gap: 14px 32px;
+    }
+
+    .muted { color: var(--text-dim); }
+    .err { color: var(--bad); }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 32px 18px 72px; }
+      .hero h1 { margin-top: 24px; }
+      .stat .v { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ Hero ============ -->
+  <div class="hero">
+    <h1>An AI <em>searching for new worlds</em> in TESS data.</h1>
+    <p class="tag">
+      An autonomous agent runs on <a href="https://orbcloud.dev" target="_blank" rel="noopener">Orb Cloud</a>, fetches light curves from NASA's TESS satellite, looks for the faint periodic dip a planet makes when it crosses its star, and publishes vetted candidates here. Open source. Checks its own work. Only billed while it's running.
+    </p>
+
+    <div class="status-row">
+      <span class="pill" id="status-pill">
+        <span class="dot"></span>
+        <span id="status-label">connecting…</span>
+      </span>
+      <span id="status-last">—</span>
+    </div>
+  </div>
+
+  <!-- ============ What it's looking for ============ -->
+  <section>
+    <div class="eyebrow">What it's looking for</div>
+    <h2>A <em>0.1% dip</em>, repeating on a clock.</h2>
+    <p class="lede">
+      When a planet passes in front of its star, starlight dims by a fraction of a percent for a few hours. The dip repeats every orbital period. The agent searches millions of TESS light curves for that exact signature.
+    </p>
+    <div class="panel">
+      <svg class="signal-svg" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" aria-label="Example folded light curve with a transit dip">
+        <defs>
+          <pattern id="grid" width="60" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 60 0 L 0 0 0 30" fill="none" stroke="#141a24" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="760" height="220" fill="url(#grid)"/>
+        <!-- Scatter points simulating noisy out-of-transit flux near y=1.0 -->
+        <g fill="#94a3b8" fill-opacity="0.8">
+          <!-- Pre-transit scatter -->
+          <circle cx="30" cy="72" r="2"/><circle cx="60" cy="70" r="2"/><circle cx="90" cy="75" r="2"/>
+          <circle cx="120" cy="71" r="2"/><circle cx="150" cy="73" r="2"/><circle cx="180" cy="70" r="2"/>
+          <circle cx="210" cy="74" r="2"/><circle cx="240" cy="72" r="2"/><circle cx="270" cy="71" r="2"/>
+          <circle cx="300" cy="73" r="2"/>
+          <!-- Transit — lower y means lower flux -->
+          <circle cx="330" cy="78" r="2"/>
+          <circle cx="350" cy="95" r="2"/>
+          <circle cx="365" cy="118" r="2"/>
+          <circle cx="380" cy="128" r="2"/>
+          <circle cx="395" cy="130" r="2"/>
+          <circle cx="410" cy="128" r="2"/>
+          <circle cx="425" cy="118" r="2"/>
+          <circle cx="440" cy="95" r="2"/>
+          <circle cx="460" cy="78" r="2"/>
+          <!-- Post-transit scatter -->
+          <circle cx="490" cy="72" r="2"/><circle cx="520" cy="74" r="2"/><circle cx="550" cy="71" r="2"/>
+          <circle cx="580" cy="72" r="2"/><circle cx="610" cy="70" r="2"/><circle cx="640" cy="73" r="2"/>
+          <circle cx="670" cy="71" r="2"/><circle cx="700" cy="72" r="2"/><circle cx="730" cy="74" r="2"/>
+        </g>
+        <!-- Fitted transit model -->
+        <path d="M 10 72
+                 L 330 72
+                 C 360 72, 360 128, 395 130
+                 C 430 128, 430 72, 460 72
+                 L 750 72"
+              fill="none" stroke="#7dd3fc" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- Baseline reference -->
+        <line x1="10" y1="72" x2="750" y2="72" stroke="#3d4658" stroke-width="1" stroke-dasharray="3,4"/>
+        <!-- Annotations -->
+        <text x="14" y="26" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1">FLUX</text>
+        <text x="14" y="40" fill="#e6edf7" font-family="JetBrains Mono, monospace" font-size="10">1.000</text>
+        <text x="14" y="136" fill="#fca5a5" font-family="JetBrains Mono, monospace" font-size="10">0.998</text>
+        <text x="712" y="210" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="end">TIME →</text>
+        <!-- Dip label -->
+        <text x="395" y="165" fill="#7dd3fc" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">
+          transit
+        </text>
+        <text x="395" y="180" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">
+          ~0.2% deep · ~2 hours
+        </text>
+      </svg>
+      <div class="signal-caption">
+        <div><b>depth</b> ≈ 200 ppm (two parts in ten thousand)</div>
+        <div><b>duration</b> ≈ a few hours</div>
+        <div><b>period</b> constant — every few days to weeks</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Live counters ============ -->
+  <section>
+    <div class="eyebrow">Right now, live</div>
+    <h2>What the agent has <em>surfaced</em>.</h2>
+    <p class="lede">
+      Every number below is read live from the agent's public JSON. No cache, no CMS. If the agent is asleep, nothing below will change until a webhook or a scheduled wake pulls it back up.
+    </p>
+    <div class="stats">
+      <div class="stat accent"><div class="k">Candidates</div><div class="v" id="n-cands">—</div></div>
+      <div class="stat"><div class="k">Confirmed</div><div class="v" id="n-conf">—</div></div>
+      <div class="stat"><div class="k">Strong</div><div class="v" id="n-strong">—</div></div>
+      <div class="stat"><div class="k">Moderate</div><div class="v" id="n-mod">—</div></div>
+    </div>
+  </section>
+
+  <!-- ============ Billing viz ============ -->
+  <section>
+    <div class="eyebrow">Cost model</div>
+    <h2>Billed for <em>working</em>, not <em>waiting</em>.</h2>
+    <p class="lede">
+      Each square is a 10-minute slice of the last 4 hours. Green = the agent was awake, processing. Gray = checkpointed to NVMe, compute cost effectively zero. A week of hunting looks like a mostly-gray grid punctuated by bursts of green.
+    </p>
+    <div class="slices" id="slice-grid">
+      <!-- populated by JS -->
+    </div>
+    <div class="slice-legend">
+      <span><span class="box" style="background: var(--good);"></span>working</span>
+      <span><span class="box" style="background: var(--border);"></span>checkpointed (frozen)</span>
+      <span><span class="box" style="background: var(--border); outline: 1px solid var(--accent); outline-offset:1px;"></span>current slice</span>
+    </div>
+    <div class="rail" style="margin-top: 20px;">
+      A VPS bills the same whether the agent is busy or idle. A serverless function can't hold state between invocations. Orb Cloud freezes the entire process to disk when there's nothing to do and wakes it in seconds when there is. This page exists to make that concrete.
+      <span class="by">— why we built on Orb</span>
+    </div>
+  </section>
+
+  <!-- ============ Candidates ============ -->
+  <section>
+    <div class="eyebrow">What it found</div>
+    <h2>Candidates <em>that cleared every gate</em>.</h2>
+    <p class="lede">
+      Every surviving candidate ran a chain of independent checks: odd/even transit depth agreement, secondary-eclipse ruling-out, cross-match against known TESS Objects of Interest, Gaia DR3 RUWE to rule out unresolved binaries. A failure at any hard gate would drop the candidate before it ever reached this page.
+    </p>
+    <div class="candidates" id="cands">
+      <div class="candidate"><span class="muted">loading candidates…</span></div>
+    </div>
+  </section>
+
+  <!-- ============ Pipeline health ============ -->
+  <section>
+    <div class="eyebrow">Does the agent itself still work?</div>
+    <h2>Pipeline health checks, <em>last run</em>.</h2>
+    <p class="lede">
+      Before trusting any new candidate, the agent re-runs a canonical set of known-planet recoveries, an injection-recovery sweep, and a null-data false-positive probe. If any of these breaks, the agent writes a HALT flag and refuses to publish until a human acknowledges.
+    </p>
+    <div class="health" id="health-rows">
+      <div class="health-row"><span class="n muted">loading health checks…</span></div>
+    </div>
+  </section>
+
+  <!-- ============ Footer ============ -->
+  <div class="footer">
+    <span>computational candidates only · not a replacement for peer review</span>
+    <span>repo: <a href="https://github.com/AWLSEN/orb-exoplanet-hunter" target="_blank" rel="noopener">AWLSEN/orb-exoplanet-hunter</a></span>
+    <span>api: <a id="api-link" href="https://cc200989.orbcloud.dev/candidates" target="_blank" rel="noopener">cc200989.orbcloud.dev</a></span>
+  </div>
+</div>
+
+<script>
+  const API = "https://cc200989.orbcloud.dev";
+
+  async function safeJson(path) {
+    try {
+      const r = await fetch(API + path, { cache: "no-store" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return await r.json();
+    } catch (e) {
+      console.warn("fetch failed", path, e);
+      return null;
+    }
+  }
+
+  function fmtDepthPpm(d) {
+    if (d == null || d <= 0) return "—";
+    return Math.round(d * 1e6).toLocaleString() + " ppm";
+  }
+  function fmtPeriod(d) { return d == null ? "—" : Number(d).toFixed(4) + " d"; }
+  function fmtScore(s)  { return s == null ? "—" : Number(s).toFixed(2); }
+  function fmtSde(s)    { return s == null ? "—" : Number(s).toFixed(1); }
+
+  // ---------- Hero pill + last-active ----------
+  async function renderStatus() {
+    const h = await safeJson("/health");
+    const pill = document.getElementById("status-pill");
+    const label = document.getElementById("status-label");
+    const last = document.getElementById("status-last");
+    if (!h) {
+      pill.classList.remove("alive", "halted");
+      label.textContent = "agent unreachable";
+      last.innerHTML = '<span class="err">API not responding.</span>';
+      return;
+    }
+    if (h.halted) {
+      pill.classList.add("halted");
+      label.textContent = "pipeline halted";
+    } else {
+      pill.classList.add("alive");
+      label.textContent = "agent online";
+    }
+    last.innerHTML = `<span class="muted">last ping ${h.ts}</span>`;
+  }
+
+  // ---------- Counters ----------
+  let _candidates = null;
+  async function renderCounters() {
+    if (_candidates == null) _candidates = await safeJson("/candidates") || [];
+    const cnt = (t) => _candidates.filter(c => c.tier === t).length;
+    document.getElementById("n-cands").textContent = _candidates.length.toLocaleString();
+    document.getElementById("n-conf").textContent = cnt("confirmed");
+    document.getElementById("n-strong").textContent = cnt("strong");
+    document.getElementById("n-mod").textContent = cnt("moderate");
+  }
+
+  // ---------- Time-slice grid ----------
+  // Derives "agent was working" from candidate discovered_at timestamps + pipeline
+  // health ran_at. Not a proxy for every Orb wake, but accurate for any wake that
+  // actually produced user-visible work.
+  async function renderSlices() {
+    const grid = document.getElementById("slice-grid");
+    grid.innerHTML = "";
+    const N_SLICES = 96;                      // 16 hours at 10-minute resolution
+    const SLICE_MS = 10 * 60 * 1000;
+    const now = Date.now();
+    const cutoff = now - N_SLICES * SLICE_MS;
+
+    const active = new Set();
+    if (_candidates == null) _candidates = await safeJson("/candidates") || [];
+    for (const c of _candidates) {
+      if (!c.discovered_at) continue;
+      const t = Date.parse(c.discovered_at);
+      if (isNaN(t) || t < cutoff) continue;
+      active.add(Math.floor((t - cutoff) / SLICE_MS));
+    }
+    const health = await safeJson("/pipeline-health");
+    if (health && health.results) {
+      for (const r of health.results) {
+        if (!r.ran_at) continue;
+        const t = Date.parse(r.ran_at);
+        if (isNaN(t) || t < cutoff) continue;
+        active.add(Math.floor((t - cutoff) / SLICE_MS));
+      }
+    }
+
+    const currentIdx = N_SLICES - 1;
+    for (let i = 0; i < N_SLICES; i++) {
+      const d = document.createElement("div");
+      d.className = "slice " + (active.has(i) ? "active" : "asleep");
+      if (i === currentIdx) d.classList.add("current");
+      const tEnd = cutoff + (i + 1) * SLICE_MS;
+      const minsAgo = Math.round((now - tEnd) / 60000);
+      d.title = (active.has(i) ? "working " : "checkpointed ") + (minsAgo <= 0 ? "just now" : `${minsAgo}m ago`);
+      grid.appendChild(d);
+    }
+  }
+
+  // ---------- Candidates ----------
+  function renderGateChip(g) {
+    let cls = "pass";
+    if (!g.passed) cls = g.severity === "hard" ? "hard" : "soft";
+    // Short, readable name.
+    const label = g.name.replace(/_/g, " ");
+    return `<span class="gate ${cls}" title="${(g.reason||"").replace(/"/g,'&quot;')}">${label}</span>`;
+  }
+
+  async function renderCandidates() {
+    if (_candidates == null) _candidates = await safeJson("/candidates") || [];
+    const container = document.getElementById("cands");
+    if (!_candidates.length) {
+      container.innerHTML = '<div class="candidate"><span class="muted">No candidates published yet. The agent will populate this list as it processes TESS data.</span></div>';
+      return;
+    }
+    const cards = _candidates.map(c => {
+      const tierCls = c.tier || "moderate";
+      const gates = (c.gate_results || []).map(renderGateChip).join(" ");
+      const sectors = (c.sectors_seen && c.sectors_seen.length) ? c.sectors_seen.join(", ") : c.sector;
+      const disc = c.discovered_at ? new Date(c.discovered_at).toUTCString().replace(/ GMT$/, " UTC") : "—";
+      return `
+        <article class="candidate">
+          <div class="top">
+            <div>
+              <div class="title">TIC ${c.tic_id}</div>
+              <div class="tic">sector ${sectors} · discovered ${disc}</div>
+            </div>
+            <span class="tier-badge ${tierCls}">${c.tier || "—"}</span>
+          </div>
+          <div class="metrics">
+            <div><div class="k">Period</div><div class="v">${fmtPeriod(c.period_days)}</div></div>
+            <div><div class="k">Depth</div><div class="v">${fmtDepthPpm(c.depth)}</div></div>
+            <div><div class="k">SDE</div><div class="v">${fmtSde(c.sde)}</div></div>
+            <div><div class="k">Transits</div><div class="v">${c.n_transits ?? "—"}</div></div>
+            <div><div class="k">Score</div><div class="v">${fmtScore(c.score)}</div></div>
+            <div><div class="k">Sectors confirmed</div><div class="v">${c.n_sectors_confirmed ?? 1}</div></div>
+          </div>
+          <div class="gates">${gates || '<span class="muted">no gate audit trail</span>'}</div>
+        </article>`;
+    }).join("");
+    container.innerHTML = cards;
+  }
+
+  // ---------- Pipeline health panel ----------
+  async function renderHealth() {
+    const h = await safeJson("/pipeline-health");
+    const container = document.getElementById("health-rows");
+    if (!h || !h.results || !h.results.length) {
+      container.innerHTML = '<div class="health-row"><span class="n muted">Health checks have not run yet.</span></div>';
+      return;
+    }
+    container.innerHTML = h.results.map(r => {
+      const sCls = r.passed ? "pass" : r.severity;
+      const sLabel = r.passed ? "PASS" : (r.severity === "hard" ? "FAIL" : "WARN");
+      return `
+        <div class="health-row">
+          <span class="n">${r.name}</span>
+          <span class="r">${(r.reason || "").replace(/</g,"&lt;")}</span>
+          <span class="s ${sCls}">${sLabel}</span>
+        </div>`;
+    }).join("");
+  }
+
+  async function boot() {
+    _candidates = null;
+    await renderStatus();
+    await renderCounters();
+    await renderSlices();
+    await renderCandidates();
+    await renderHealth();
+  }
+  boot();
+  setInterval(boot, 60_000);
+</script>
+</body>
+</html>
