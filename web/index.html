@@ -141,13 +141,13 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 14px 16px;
+      padding: 16px 18px;
     }
     .strip {
       display: grid;
       grid-template-columns: repeat(60, 1fr);
       gap: 2px;
-      height: 44px;
+      height: 32px;
     }
     .slice {
       background: #eeece6;
@@ -156,13 +156,15 @@
     }
     .slice.awake { background: #86efac; }
     .slice.awake.recent { background: #22c55e; }
-    .slice.now { outline: 1.5px solid var(--accent); outline-offset: 1.5px; position: relative; z-index: 1; }
+    /* "now" marker sits INSIDE the cell as an inset shadow — keeps layout clean
+       (outline/outline-offset overflowed and shifted the axis labels). */
+    .slice.now { box-shadow: inset 0 0 0 2px var(--accent); }
     .strip-axis {
-      display: flex; justify-content: space-between; margin-top: 6px;
+      display: flex; justify-content: space-between; margin-top: 10px;
       font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-very-dim);
     }
     .strip-legend {
-      display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 10px;
+      display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 10px;
       font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);
     }
     .strip-legend .box {
