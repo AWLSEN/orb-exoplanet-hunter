@@ -8,7 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -281,6 +281,30 @@
     }
     .metric-row .val { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--text); }
 
+    /* Headline pair — promotes the two stats that make the cost story obvious */
+    .metric-hero-grid {
+      margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media (max-width: 560px) { .metric-hero-grid { grid-template-columns: 1fr; } }
+    .metric-hero {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px;
+    }
+    .metric-hero .big {
+      font-family: 'Instrument Serif', 'JetBrains Mono', serif;
+      font-size: 44px; line-height: 1.05; color: var(--text); letter-spacing: -0.01em;
+    }
+    .metric-hero .big.mono { font-family: 'JetBrains Mono', monospace; font-size: 38px; }
+    .metric-hero .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-very-dim);
+      margin-bottom: 10px;
+    }
+    .metric-hero .note {
+      font-family: Inter, sans-serif; font-size: 13px; color: var(--text-dim);
+      margin-top: 8px;
+    }
+
     /* Footer */
     .foot {
       margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--border);
@@ -391,6 +415,22 @@
   <!-- Operator metrics, below-the-fold -->
   <section>
     <div class="kicker">session metrics</div>
+
+    <!-- Headline pair: the frozen-% and the sleep/wake count are the
+         story. Everything else is supporting context. -->
+    <div class="metric-hero-grid">
+      <div class="metric-hero">
+        <div class="tag">frozen</div>
+        <div class="big"><span id="m-sleep-pct">—</span></div>
+        <div class="note">of the session Orb kept the agent asleep on disk. You pay for working, not waiting.</div>
+      </div>
+      <div class="metric-hero">
+        <div class="tag">sleep / wake cycles</div>
+        <div class="big mono" id="m-cycles">—</div>
+        <div class="note">times Orb put the agent to sleep and woke it back up — one per LLM call.</div>
+      </div>
+    </div>
+
     <div class="metrics-rows">
       <div class="metric-row">
         <div>
@@ -402,16 +442,16 @@
       <div class="metric-row">
         <div>
           <div class="label">active compute</div>
-          <div class="sub">runtime × memory from Orb /v1/usage · org-wide total</div>
+          <div class="sub">wall time the agent was actually awake this session</div>
         </div>
         <div class="val" id="m-active">—</div>
       </div>
       <div class="metric-row">
         <div>
-          <div class="label">checkpoint cycles</div>
-          <div class="sub">times Orb froze / woke the container · from /v1/usage</div>
+          <div class="label">last active</div>
+          <div class="sub">seconds since the agent last woke for work</div>
         </div>
-        <div class="val" id="m-cycles">—</div>
+        <div class="val" id="m-lastactive">—</div>
       </div>
     </div>
   </section>
@@ -684,26 +724,38 @@
   }
 
   async function renderSessionMetrics() {
-    const sess  = await safeJson("/session");
-    const usage = await safeJson("/usage");
+    const [sess, stats] = await Promise.all([
+      safeJson("/session"),
+      safeJson("/stats"),
+    ]);
 
     const sessEl = document.getElementById("m-session");
     if (sess && sess.uptime_seconds != null) {
       sessEl.textContent = humanDuration(sess.uptime_seconds * 1000);
     } else sessEl.textContent = "—";
 
-    const actEl = document.getElementById("m-active");
-    if (usage && usage.ok && usage.runtime_gb_hours != null) {
-      const hours = usage.runtime_gb_hours / (RUNTIME_MB / 1024);
-      actEl.textContent = humanDuration(hours * 3600 * 1000);
-    } else {
-      actEl.textContent = usage && usage.error ? "unavailable" : "—";
-    }
+    const okStats = stats && stats.ok;
+
+    const sleepEl = document.getElementById("m-sleep-pct");
+    if (okStats && stats.sleep_pct != null) {
+      sleepEl.textContent = Number(stats.sleep_pct).toFixed(1) + "%";
+    } else sleepEl.textContent = "—";
 
     const cycEl = document.getElementById("m-cycles");
-    if (usage && usage.ok && usage.checkpoint_cycles != null) {
-      cycEl.textContent = Number(usage.checkpoint_cycles).toLocaleString();
-    } else cycEl.textContent = usage && usage.error ? "unavailable" : "—";
+    if (okStats && stats.checkpoints != null) {
+      cycEl.textContent = Number(stats.checkpoints).toLocaleString();
+    } else cycEl.textContent = "—";
+
+    const actEl = document.getElementById("m-active");
+    if (okStats && stats.runtime_gb_hours != null) {
+      const hours = stats.runtime_gb_hours / (RUNTIME_MB / 1024);
+      actEl.textContent = humanDuration(hours * 3600 * 1000);
+    } else actEl.textContent = "—";
+
+    const lastEl = document.getElementById("m-lastactive");
+    if (okStats && stats.last_active_ago_secs != null) {
+      lastEl.textContent = humanDuration(stats.last_active_ago_secs * 1000) + " ago";
+    } else lastEl.textContent = "—";
   }
 
   async function tick() {

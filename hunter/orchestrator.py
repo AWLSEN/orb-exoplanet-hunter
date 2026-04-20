@@ -278,6 +278,62 @@ def usage_info() -> dict:
     }
 
 
+@app.get("/stats")
+def computer_stats() -> dict:
+    """Per-computer stats from /v1/computers/{id}/stats — unlike /usage
+    this is scoped to this exact machine (no drift from destroyed or
+    sibling computers in the same org). Exposes sleep_pct + checkpoints
+    so the dashboard can show a headline 'frozen X% of session'."""
+    import urllib.request
+
+    key = os.environ.get("ORB_API_KEY")
+    if not key:
+        return {"ok": False, "error": "ORB_API_KEY not set on agent"}
+
+    want_name = os.environ.get("ORB_COMPUTER_NAME", "orb-exoplanet-hunter")
+    list_req = urllib.request.Request(
+        "https://api.orbcloud.dev/v1/computers",
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    try:
+        with urllib.request.urlopen(list_req, timeout=10) as resp:
+            listing = json.loads(resp.read())
+    except Exception as e:
+        return {"ok": False, "error": f"list: {type(e).__name__}: {e}"}
+
+    computers = listing.get("computers", [])
+    cid = next((c["id"] for c in computers if c.get("name") == want_name), None)
+    if not cid and computers:
+        cid = computers[0].get("id")
+    if not cid:
+        return {"ok": False, "error": "no computer visible to this api key"}
+
+    stats_req = urllib.request.Request(
+        f"https://api.orbcloud.dev/v1/computers/{cid}/stats",
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    try:
+        with urllib.request.urlopen(stats_req, timeout=10) as resp:
+            s = json.loads(resp.read())
+    except Exception as e:
+        return {"ok": False, "error": f"stats: {type(e).__name__}: {e}"}
+
+    return {
+        "ok": True,
+        "computer_id": cid,
+        "window": s.get("window"),
+        "sleep_pct": s.get("sleep_pct"),
+        "active_pct": s.get("active_pct"),
+        "checkpoints": s.get("checkpoints"),
+        "llm_calls": s.get("llm_calls"),
+        "failures": s.get("failures"),
+        "runtime_gb_hours": s.get("runtime_gb_hours"),
+        "est_cost_usd": s.get("est_cost_usd"),
+        "last_active_ago_secs": s.get("last_active_ago_secs"),
+        "avg_restore_ms": s.get("avg_restore_ms"),
+    }
+
+
 @app.get("/candidates")
 def candidates(tier: str | None = None, min_score: float = 0.0) -> list[dict]:
     """Return all candidates, optionally filtered by tier/score."""
