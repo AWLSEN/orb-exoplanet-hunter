@@ -94,9 +94,12 @@ trigger_build() {
 # --- start agent --------------------------------------------------------
 start_agent() {
     : "${ANTHROPIC_AUTH_TOKEN:?ANTHROPIC_AUTH_TOKEN required (Z.AI GLM or anthropic)}"
+    # orb.toml also references ${ORB_API_KEY} so /stats can pull per-computer
+    # metrics. Orb validates placeholders against org_secrets and 400s if any
+    # are missing — forward both.
     local body
-    body=$(jq -n --arg k "$ANTHROPIC_AUTH_TOKEN" \
-        '{org_secrets: {ANTHROPIC_AUTH_TOKEN: $k}}')
+    body=$(jq -n --arg k "$ANTHROPIC_AUTH_TOKEN" --arg o "$ORB_API_KEY" \
+        '{org_secrets: {ANTHROPIC_AUTH_TOKEN: $k, ORB_API_KEY: $o}}')
     log "starting agent"
     local resp
     resp=$(curl -fsS -X POST "$BASE_URL/v1/computers/$COMPUTER_ID/agents" \
